@@ -30,8 +30,12 @@
 
         /* ================= SIDEBAR ================= */
         .sidebar { width: 260px; background-color: #1e293b; color: white; display: flex; flex-direction: column; height: 100vh; }
-        .sidebar-header { padding: 20px; display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: bold; border-bottom: 1px solid #334155; }
-        .sidebar-header i { color: #f59e0b; font-size: 24px; }
+        .sidebar-header { padding: 20px; display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: bold; border-bottom: 1px solid #334155; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+        .logo-badge { width: 42px; height: 42px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4); }
+        .logo-badge i { color: #f59e0b; font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .logo-text span { display: block; font-size: 16px; font-weight: bold; letter-spacing: 0.5px; color: #f8fafc; }
+        .logo-text small { display: block; font-size: 11px; color: #94a3b8; font-weight: normal; }
+
         .nav-menu { list-style: none; padding: 20px 0; flex: 1; }
         .nav-menu li { padding: 12px 25px; margin: 5px 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 15px; color: #cbd5e1; transition: 0.3s; font-size: 14px; }
         .nav-menu li:hover { background-color: #334155; color: white; }
@@ -207,8 +211,13 @@
     <!-- SIDEBAR NAVIGASI -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <i class="fa-solid fa-rocket"></i>
-            <span>Akselerasi Privat</span>
+            <div class="logo-badge">
+                <i class="fa-solid fa-rocket"></i>
+            </div>
+            <div class="logo-text">
+                <span>Akselerasi Privat</span>
+                <small>Portal Belajar & Ujian</small>
+            </div>
         </div>
         <ul class="nav-menu">
             <li id="nav-beranda" class="active" onclick="switchTab('beranda')"><i class="fa-solid fa-house"></i> Beranda</li>
@@ -421,7 +430,7 @@
                         <div id="blocked-content">
                             <h2>⚠️ Akses Ditolak</h2>
                             <p class="warning-text" style="margin-top:15px;">Kamu sudah menyelesaikan Quiz ini.</p>
-                            <p style="text-align: center; color: #64748b;">Ujian hanya bisa disubmit satu kali. Progres nilai Anda telah tersimpan permanen di Server.</p>
+                            <p style="text-align: center; color: #64748b;">Ujian hanya bisa disubmit satu kali. Progres nilai Anda telah tersimpan permanen.</p>
                         </div>
 
                         <div id="quiz-content">
@@ -455,16 +464,14 @@
         // ================== KONFIGURASI SUPABASE ==================
         const { createClient } = supabase;
         
-        // GANTI DUA BARIS DI BAWAH INI DENGAN DATA DARI DASBOR SUPABASE KAMU
-        const supabaseUrl = 'https://nhblwsykydsdkzwgxctf.supabase.co';
+        const supabaseUrl = 'https://nhblwsykdzsdkzwgxctf.supabase.co';
         const supabaseKey = 'sb_publishable_a5gzA1EBvdQY1rd6xuThbg_r64kXNu8';
         
         const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-        currentUser = null;
+        let currentUser = null;
 
         // ================= DATABASE SOAL ASLI (DEFAULT) =================
-        // Database ini TIDAK DIHAPUS. Berfungsi sebagai fondasi (fallback) jika database Supabase belum terisi
         const defaultPortalData = {
             "4A": { namaMapel: "Kelas 4A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] },
             "4B": { namaMapel: "Kelas 4B - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] },
@@ -535,7 +542,7 @@
                 ],
                 quiz: [
                     { type: 'pg', q: "1. Pada bilangan 3.542.100, angka 5 menempati nilai tempat...", options: ["A. Ratusan ribu", "B. Puluhan ribu", "C. Jutaan", "D. Ribuan"], answer: 0 },
-                    { type: 'pg', q: "2. Urutkan bilangan berikut dari yang terbesar ke terkecil: 12.300, 12.030, 13.200, 12.330", options: ["A. 13.200, 12.330, 12.300, 12.030", "B. 12.030, 12.300, 12.330, 13.200", "C. 13.200, 12.300, 12.330, 12.030", "D. 12.330, 13.200, 12.300, 12.030"], answer: 0 },
+                    { type: 'pg', q: "2. Urutkan bilangan berikut dari yang terbesar ke terkecil: 12.300, 12.030, 13.200, 12.330", options: ["A. 13.200, 12.330, 12.300, 12.030", "B. 12.030, 12.300, 12.330, 13.200", "C. 13.200, 12.300, 12.330, 12.030", "D. 12.330, 13.200, 12.300, 12.300"], answer: 0 },
                     { type: 'pg', q: "3. Ibu mempunyai 120 permen. Permen tersebut dibagikan kepada 3 anak. Jika setiap anak mendapat 25 permen, berapakah sisa permen Ibu sekarang?", options: ["A. 75 permen", "B. 45 permen", "C. 25 permen", "D. 35 permen"], answer: 1 },
                     { type: 'pg', q: "4. Sebuah toko menerima kiriman 4 kardus buku bacaan. Setiap kardus berisi 30 buku. Buku tersebut akan ditata sama rata ke dalam 5 rak. Banyak buku pada setiap rak adalah...", options: ["A. 30 buku", "B. 20 buku", "C. 24 buku", "D. 120 buku"], answer: 2 },
                     { type: 'pg', q: "5. Budi membeli pensil seharga Rp5.000 dan buku tulis seharga Rp12.000. Jika Budi membayar dengan selembar uang Rp20.000, jumlah uang kembaliannya adalah...", options: ["A. Rp2.000", "B. Rp3.000", "C. Rp5.000", "D. Rp17.000"], answer: 1 },
@@ -561,110 +568,76 @@
             "9A": { namaMapel: "Kelas 9A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] }
         };
 
-        // Salin data default ke portalData agar aman sebelum ditimpa oleh Supabase
         let portalData = JSON.parse(JSON.stringify(defaultPortalData));
 
         // ================== SAAT WEB DIMUAT ==================
         window.onload = async () => {
             try {
-                // 1. Mengambil data materi dari tabel 'materi_kelas' di Supabase
                 const { data: materiData, error: errMateri } = await supabaseClient.from('materi_kelas').select('*');
                 
                 if (errMateri) throw errMateri;
                 
-                // 2. Jika ada data dari Supabase, timpa portalData default
                 if (materiData && materiData.length > 0) {
                     materiData.forEach(row => {
-                        // Hanya timpa jika data dari Supabase benar-benar tidak kosong (null)
                         if(row.nama_mapel) portalData[row.kelas_id].namaMapel = row.nama_mapel;
                         if(row.kisi_kisi) portalData[row.kelas_id].kisi2 = row.kisi_kisi;
                         if(row.latihan && row.latihan.length > 0) portalData[row.kelas_id].latihan = row.latihan;
                         if(row.quiz && row.quiz.length > 0) portalData[row.kelas_id].quiz = row.quiz;
                     });
                 }
-
-                // 3. Cek apakah user sudah login di perangkat ini
-                const savedUser = localStorage.getItem("Akselerasi_User_Session");
-                if (savedUser) {
-                    currentUser = JSON.parse(savedUser);
-                    // Ambil progres terbaru dari DB untuk user ini
-                    if (currentUser.role === 'siswa') {
-                        const { data: dbUser } = await supabaseClient.from('akun_pengguna').select('*').eq('nama', currentUser.nama).single();
-                        if(dbUser) {
-                            currentUser.latihan_selesai = dbUser.latihan_selesai;
-                            currentUser.quiz_done = dbUser.quiz_done;
-                            currentUser.score = dbUser.score;
-                        }
-                    }
-                    initSessionUI();
-                } else {
-                    document.getElementById('login-overlay').style.display = 'flex';
-                }
             } catch (error) {
-                // Jika Supabase gagal, web tetap jalan menggunakan defaultPortalData 6A asli!
-                console.warn("Gagal mengambil data dari Supabase, menggunakan data lokal bawaan.", error);
+                console.warn("Gagal mengambil materi online dari Supabase, menggunakan data lokal bawaan.", error);
+            } finally {
                 const savedUser = localStorage.getItem("Akselerasi_User_Session");
                 if (savedUser) {
                     currentUser = JSON.parse(savedUser);
-                    initSessionUI();
+                    initSessionUI(true); // true = jangan paksa pindah ke beranda saat inisialisasi awal jika sudah login
                 } else {
                     document.getElementById('login-overlay').style.display = 'flex';
                 }
-            } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
             }
         };
 
-        // ================== LOGIN SISWA (DATABASE) ==================
-        async function handleLoginSiswa(event) {
+        // ================== LOGIN SISWA (LOKAL) ==================
+        function handleLoginSiswa(event) {
             event.preventDefault();
-            const btn = document.getElementById('btn-login-siswa');
-            btn.innerText = "Memeriksa data...";
-            btn.disabled = true;
-
             const nama = document.getElementById('input-nama').value.trim();
             const pass = document.getElementById('input-pass').value.trim();
             const kelasKey = document.getElementById('input-kelas').value;
 
-            try {
-                let { data: user, error } = await supabaseClient.from('akun_pengguna').select('*').eq('nama', nama).single();
+            if (!nama) return alert('Nama lengkap harus diisi!');
 
-                if (user) {
-                    if (user.password !== pass) {
-                        alert("Password salah!");
-                        btn.innerText = "Masuk ke Portal";
-                        btn.disabled = false;
-                        return;
+            let savedUserData = null;
+            const existingSession = localStorage.getItem("Akselerasi_User_Session");
+            if (existingSession) {
+                try {
+                    const parsed = JSON.parse(existingSession);
+                    if (parsed.nama === nama && parsed.role === 'siswa') {
+                        savedUserData = parsed;
                     }
-                    if(user.kelas_id !== kelasKey) {
-                        await supabaseClient.from('akun_pengguna').update({ kelas_id: kelasKey, quiz_done: false, score: 0 }).eq('nama', nama);
-                        user.kelas_id = kelasKey;
-                        user.quiz_done = false;
-                        user.score = 0;
-                    }
-                    currentUser = { ...user, role: 'siswa' };
-                } else {
-                    const newUser = { nama: nama, password: pass, role: 'siswa', kelas_id: kelasKey };
-                    const { data: insertedUser, error: insertErr } = await supabaseClient.from('akun_pengguna').insert([newUser]).select().single();
-                    if (insertErr) throw insertErr;
-                    currentUser = { ...insertedUser, role: 'siswa' };
-                }
-
-                localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
-                document.getElementById('login-overlay').style.display = 'none';
-                initSessionUI();
-
-            } catch (error) {
-                alert("Terjadi kesalahan atau koneksi terputus. Menggunakan sistem Offline.");
-                // Fallback offline (local storage login)
-                currentUser = { nama: nama, password: pass, role: 'siswa', kelas_id: kelasKey, quiz_done: false, score: 0, latihan_selesai: 0 };
-                localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
-                document.getElementById('login-overlay').style.display = 'none';
-                initSessionUI();
+                } catch(e) {}
             }
-            
-            btn.innerText = "Masuk ke Portal";
-            btn.disabled = false;
+
+            if (savedUserData) {
+                currentUser = savedUserData;
+                currentUser.kelas_id = kelasKey;
+            } else {
+                currentUser = {
+                    nama: nama,
+                    password: pass,
+                    role: 'siswa',
+                    kelas_id: kelasKey,
+                    quiz_done: false,
+                    score: 0,
+                    latihan_selesai: 0
+                };
+            }
+
+            localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
+            document.getElementById('login-overlay').style.display = 'none';
+            initSessionUI(false); // false = baru login, boleh arahkan ke beranda
+            switchTab('beranda');
         }
 
         // ================== LOGIN GURU ==================
@@ -678,7 +651,7 @@
             currentUser = { nama: nama, role: 'guru' };
             localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
             document.getElementById('login-overlay').style.display = 'none';
-            initSessionUI();
+            initSessionUI(false);
         }
 
         function handleLogout() {
@@ -701,7 +674,7 @@
         }
 
         // ================== INISIALISASI UI ==================
-        function initSessionUI() {
+        function initSessionUI(isInitialLoad = false) {
             document.getElementById('display-user-name').innerText = currentUser.nama;
             document.getElementById('avatar-initials').innerText = currentUser.nama.charAt(0).toUpperCase();
 
@@ -713,7 +686,7 @@
                 document.getElementById('nav-latihan').style.display = 'none';
                 document.getElementById('nav-quiz').style.display = 'none';
                 document.getElementById('quote-box-ui').style.display = 'none';
-                switchTab('panel-guru');
+                if(!isInitialLoad) switchTab('panel-guru');
             } else {
                 const kelasKey = currentUser.kelas_id || currentUser.kelas;
                 const dataKelas = portalData[kelasKey];
@@ -751,7 +724,9 @@
                 const latPct = Math.min(((currentUser.latihan_selesai || 0) / totalLat) * 100, 100);
                 document.getElementById('prog-bar-2').style.width = `${latPct}%`;
 
-                switchTab('beranda');
+                if(!isInitialLoad) {
+                    switchTab('beranda');
+                }
             }
         }
 
@@ -788,7 +763,6 @@
                 }
 
                 try {
-                    // Coba update ke Supabase
                     const { error } = await supabaseClient.from('materi_kelas').update(dataToUpdate).eq('kelas_id', kelasKey);
                     if (error) throw error;
                     tampilkanNotifUpload(kolomDB, 'Tersimpan di Supabase!');
@@ -810,28 +784,18 @@
         }
 
         // ================== LOGIC SISWA ==================
-        async function quickSwitchKelas(kelasKey) {
+        function quickSwitchKelas(kelasKey) {
             if (!currentUser || currentUser.role === 'guru') return;
             
-            try {
-                await supabaseClient.from('akun_pengguna').update({ kelas_id: kelasKey, quiz_done: false, score: 0, latihan_selesai: 0 }).eq('nama', currentUser.nama);
-                
-                currentUser.kelas_id = kelasKey;
-                currentUser.quiz_done = false;
-                currentUser.score = 0;
-                currentUser.latihan_selesai = 0;
-                
-                localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
-                initSessionUI();
-                alert("Kelas berhasil diubah ke " + portalData[kelasKey].namaMapel);
-                switchTab('kisi-kisi');
-            } catch(e) {
-                // Fallback offline switch class
-                currentUser.kelas_id = kelasKey;
-                localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
-                initSessionUI();
-                switchTab('kisi-kisi');
-            }
+            currentUser.kelas_id = kelasKey;
+            currentUser.quiz_done = false;
+            currentUser.score = 0;
+            currentUser.latihan_selesai = 0;
+            
+            localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
+            initSessionUI(true);
+            alert("Kelas berhasil diubah ke " + portalData[kelasKey].namaMapel);
+            switchTab('kisi-kisi');
         }
 
         function filterClasses() {
@@ -871,7 +835,7 @@
             });
         }
 
-        async function cekLatihan(index) {
+        function cekLatihan(index) {
             const kelasKey = currentUser.kelas_id || currentUser.kelas;
             const q = portalData[kelasKey].latihan[index];
             const selected = document.querySelector(`input[name="lat_q${index}"]:checked`);
@@ -882,16 +846,20 @@
             
             const feedbackDiv = document.getElementById(`feed_${index}`);
             feedbackDiv.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
-            feedbackDiv.innerHTML = `<strong>${isCorrect ? 'Benar Sekali!' : 'Masih Kurang Tepat!'}</strong><br><br>${q.explanations ? q.explanations[val] : 'Lihat kembali catatan materi.'}`;
+            
+            let explanationText = "Lihat kembali catatan materi.";
+            if (q.explanations && q.explanations[val]) {
+                explanationText = q.explanations[val];
+            }
+
+            feedbackDiv.innerHTML = `<strong>${isCorrect ? 'Benar Sekali!' : 'Masih Kurang Tepat!'}</strong><br><br>${explanationText}`;
             feedbackDiv.style.display = 'block';
 
             if (isCorrect && currentUser && currentUser.role !== 'guru') {
                 let currentLat = currentUser.latihan_selesai || 0;
                 currentUser.latihan_selesai = currentLat + 1;
                 localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
-                
-                try { supabaseClient.from('akun_pengguna').update({ latihan_selesai: currentUser.latihan_selesai }).eq('nama', currentUser.nama); } catch(e) {}
-                initSessionUI();
+                initSessionUI(true); // Memperbarui progress di latar belakang tanpa melempar halaman siswa ke beranda
             }
         }
 
@@ -922,7 +890,7 @@
             });
         }
 
-        async function submitQuiz() {
+        function submitQuiz() {
             const kelasKey = currentUser.kelas_id || currentUser.kelas;
             const soalList = portalData[kelasKey].quiz;
             let score = 0;
@@ -946,22 +914,12 @@
 
             if (unanswered) return alert("Masih ada soal ujian yang belum dijawab!");
 
-            const btnSubmit = document.getElementById('btn-submit-ujian');
-            btnSubmit.innerText = "Mengirim Nilai ke Server...";
-            btnSubmit.disabled = true;
-
             const finalScore = Math.round((score / soalList.length) * 100);
-
-            try {
-                await supabaseClient.from('akun_pengguna').update({ score: finalScore, quiz_done: true }).eq('nama', currentUser.nama);
-            } catch (error) {
-                console.warn("Gagal menyimpan ke database Supabase, menggunakan offline mode");
-            }
 
             currentUser.quiz_done = true;
             currentUser.score = finalScore;
             localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
-            initSessionUI();
+            initSessionUI(true);
 
             document.getElementById('quiz-content').style.display = 'none';
             document.getElementById('result-content').style.display = 'block';
@@ -971,9 +929,6 @@
             const noWaPakRio = "6289691870961";
             const textPesan = `Assalamu'alaikum Pak Rio, saya *${currentUser.nama}* dari *${portalData[kelasKey].namaMapel}* telah menyelesaikan Quiz Ujian.%0A%0A*Nilai Ujian Saya: ${finalScore}*%0A%0ABerikut saya lampirkan bukti screenshotnya. Terima kasih Pak!`;
             document.getElementById('wa-link').href = `https://wa.me/${noWaPakRio}?text=${textPesan}`;
-            
-            btnSubmit.innerText = "Kirim Jawaban & Lihat Skor";
-            btnSubmit.disabled = false;
         }
     </script>
 </body>
