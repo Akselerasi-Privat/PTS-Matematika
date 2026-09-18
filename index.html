@@ -747,7 +747,12 @@
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const content = e.target.result;
-                let dataToUpdate = {};
+                
+                // Siapkan data dengan kelas_id agar Supabase tahu data milik kelas mana
+                let dataToUpdate = {
+                    kelas_id: kelasKey,
+                    nama_mapel: portalData[kelasKey].namaMapel
+                };
 
                 if (kolomDB === 'kisi_kisi') {
                     dataToUpdate[kolomDB] = content;
@@ -763,11 +768,12 @@
                 }
 
                 try {
-                    const { error } = await supabaseClient.from('materi_kelas').update(dataToUpdate).eq('kelas_id', kelasKey);
+                    // Gunakan upsert agar baris kelas otomatis dibuat jika belum ada di Supabase
+                    const { error } = await supabaseClient.from('materi_kelas').upsert(dataToUpdate);
                     if (error) throw error;
                     tampilkanNotifUpload(kolomDB, 'Tersimpan di Supabase!');
                 } catch (error) {
-                    console.warn("Gagal mengunggah ke database. Tetap tersimpan di aplikasi sementara.", error);
+                    console.warn("Gagal mengunggah ke database.", error);
                     tampilkanNotifUpload(kolomDB, 'Hanya tersimpan di perangkat (Offline)');
                 }
             };
