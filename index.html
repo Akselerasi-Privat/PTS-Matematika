@@ -574,24 +574,40 @@
         window.onload = async () => {
             try {
                 const { data: materiData, error: errMateri } = await supabaseClient.from('materi_kelas').select('*');
-                
                 if (errMateri) throw errMateri;
                 
                 if (materiData && materiData.length > 0) {
                     materiData.forEach(row => {
+                        // Mencegah error jika kelas_id dari database tidak dikenali di struktur lokal
+                        if (!portalData[row.kelas_id]) {
+                            portalData[row.kelas_id] = { namaMapel: "Kelas " + row.kelas_id, kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] };
+                        }
+                        
                         if(row.nama_mapel) portalData[row.kelas_id].namaMapel = row.nama_mapel;
                         if(row.kisi_kisi) portalData[row.kelas_id].kisi2 = row.kisi_kisi;
-                        if(row.latihan && row.latihan.length > 0) portalData[row.kelas_id].latihan = row.latihan;
-                        if(row.quiz && row.quiz.length > 0) portalData[row.kelas_id].quiz = row.quiz;
+                        
+                        // Memastikan data Latihan diparse dengan benar menjadi Array
+                        if(row.latihan) {
+                            let latData = row.latihan;
+                            if (typeof latData === 'string') try { latData = JSON.parse(latData); } catch(e) {}
+                            if (Array.isArray(latData)) portalData[row.kelas_id].latihan = latData;
+                        }
+                        
+                        // Memastikan data Quiz diparse dengan benar menjadi Array
+                        if(row.quiz) {
+                            let quizData = row.quiz;
+                            if (typeof quizData === 'string') try { quizData = JSON.parse(quizData); } catch(e) {}
+                            if (Array.isArray(quizData)) portalData[row.kelas_id].quiz = quizData;
+                        }
                     });
                 }
             } catch (error) {
-                console.warn("Gagal mengambil materi online dari Supabase, menggunakan data lokal bawaan.", error);
+                console.warn("Gagal mengambil materi online dari Supabase.", error);
             } finally {
                 const savedUser = localStorage.getItem("Akselerasi_User_Session");
                 if (savedUser) {
                     currentUser = JSON.parse(savedUser);
-                    initSessionUI(true); // true = jangan paksa pindah ke beranda saat inisialisasi awal jika sudah login
+                    initSessionUI(true);
                 } else {
                     document.getElementById('login-overlay').style.display = 'flex';
                 }
@@ -636,7 +652,7 @@
 
             localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
             document.getElementById('login-overlay').style.display = 'none';
-            initSessionUI(false); // false = baru login, boleh arahkan ke beranda
+            initSessionUI(false);
             switchTab('beranda');
         }
 
@@ -720,7 +736,7 @@
                 document.getElementById('prog-bar-1').style.width = `${scoreVal}%`;
 
                 document.getElementById('prog-val-2').innerText = `${currentUser.latihan_selesai || 0} Soal`;
-                const totalLat = (dataKelas && dataKelas.latihan.length > 0) ? dataKelas.latihan.length : 1;
+                const totalLat = (dataKelas && Array.isArray(dataKelas.latihan) && dataKelas.latihan.length > 0) ? dataKelas.latihan.length : 1;
                 const latPct = Math.min(((currentUser.latihan_selesai || 0) / totalLat) * 100, 100);
                 document.getElementById('prog-bar-2').style.width = `${latPct}%`;
 
@@ -748,7 +764,6 @@
             reader.onload = async function(e) {
                 const content = e.target.result;
                 
-                // Siapkan data dengan kelas_id agar Supabase tahu data milik kelas mana
                 let dataToUpdate = {
                     kelas_id: kelasKey,
                     nama_mapel: portalData[kelasKey].namaMapel
@@ -760,6 +775,9 @@
                 } else {
                     try {
                         const jsonData = JSON.parse(content);
+                        if (!Array.isArray(jsonData)) {
+                            return alert('Gagal! Pastikan isi file JSON memiliki struktur Array (diawali [ dan diakhiri ]).');
+                        }
                         dataToUpdate[kolomDB] = jsonData;
                         portalData[kelasKey][kolomDB] = jsonData;
                     } catch (error) {
@@ -768,7 +786,6 @@
                 }
 
                 try {
-                    // Gunakan upsert agar baris kelas otomatis dibuat jika belum ada di Supabase
                     const { error } = await supabaseClient.from('materi_kelas').upsert(dataToUpdate);
                     if (error) throw error;
                     tampilkanNotifUpload(kolomDB, 'Tersimpan di Supabase!');
@@ -826,7 +843,7 @@
         function renderLatihan(soalList) {
             const container = document.getElementById('latihan-container');
             container.innerHTML = "";
-            if (!soalList || soalList.length === 0) {
+            if (!Array.isArray(soalList) || soalList.length === 0) {
                 container.innerHTML = `<p style="color:#64748b; text-align:center; padding:30px;">Soal latihan untuk kelas ini belum tersedia.</p>`;
                 return;
             }
@@ -865,7 +882,7 @@
                 let currentLat = currentUser.latihan_selesai || 0;
                 currentUser.latihan_selesai = currentLat + 1;
                 localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
-                initSessionUI(true); // Memperbarui progress di latar belakang tanpa melempar halaman siswa ke beranda
+                initSessionUI(true);
             }
         }
 
@@ -874,7 +891,7 @@
             const btnSubmit = document.getElementById('btn-submit-ujian');
             container.innerHTML = "";
             
-            if (!soalList || soalList.length === 0) {
+            if (!Array.isArray(soalList) || soalList.length === 0) {
                 container.innerHTML = `<p style="color:#64748b; text-align:center; padding:30px;">Quiz ujian untuk kelas ini belum tersedia.</p>`;
                 if(btnSubmit) btnSubmit.style.display = 'none';
                 return;
