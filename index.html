@@ -1018,7 +1018,7 @@
         // ================== LOGIC UJIAN (TOKEN & TIMER) ==================
         let jenisEvaluasiAktif = '';
         let timerInterval;
-        let durasiUjian = 60; // 60 Menit (dalam detik)
+        let durasiUjian = 60 * 60; // 60 Menit (dalam detik)
 
         function mintaToken(jenis) {
             const kelasKey = currentUser.kelas_id || currentUser.kelas;
@@ -1111,7 +1111,9 @@
     });
 
     const finalScore = Math.round((score / soalList.length) * 100) || 0;
-    
+    currentUser[jenisEvaluasiAktif + '_done'] = true;
+    currentUser['skor_' + jenisEvaluasiAktif] = finalScore;
+    localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
     document.getElementById('container-soal-dinamis').innerHTML = "";
     document.getElementById('btn-submit-ujian-dinamis').style.display = 'none';
     document.getElementById('hasil-ujian-dinamis').style.display = 'block';
