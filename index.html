@@ -1018,7 +1018,7 @@
         // ================== LOGIC UJIAN (TOKEN & TIMER) ==================
         let jenisEvaluasiAktif = '';
         let timerInterval;
-        let durasiUjian = 90 * 60; // 90 Menit (dalam detik)
+        let durasiUjian = 60; // 60 Menit (dalam detik)
 
         function mintaToken(jenis) {
             const kelasKey = currentUser.kelas_id || currentUser.kelas;
@@ -1032,6 +1032,64 @@
             document.getElementById('input-token').value = '';
             document.getElementById('pesan-error-token').style.display = 'none';
             switchTab('halaman-token');
+        }
+        function validasiToken() {
+            const tokenMasuk = document.getElementById('input-token').value.trim().toUpperCase();
+            
+            // Token fleksibel: Bisa menggunakan 'PTS2026' / 'PAS2026' atau 'UJIAN'
+            // Bapak bisa mengubah kata kunci token di sini sesuai kebutuhan
+            const tokenValidPTS = ['PTS2026', 'PTS', 'UJIAN'];
+            const tokenValidPAS = ['PAS2026', 'PAS', 'UJIAN'];
+
+            let isAuthorized = false;
+
+            if (jenisEvaluasiAktif === 'pts' && tokenValidPTS.includes(tokenMasuk)) {
+                isAuthorized = true;
+            } else if (jenisEvaluasiAktif === 'pas' && tokenValidPAS.includes(tokenMasuk)) {
+                isAuthorized = true;
+            }
+
+            if (isAuthorized) {
+                mulaiUjian();
+            } else {
+                document.getElementById('pesan-error-token').style.display = 'block';
+            }
+        }
+
+        function mulaiUjian() {
+            const kelasKey = currentUser.kelas_id || currentUser.kelas;
+            switchTab('halaman-ujian-aktif');
+            
+            document.getElementById('ujian-main-content').style.display = 'block';
+            document.getElementById('hasil-ujian-dinamis').style.display = 'none';
+            document.getElementById('ujian-blocked-content').style.display = 'none';
+            document.getElementById('judul-ujian-aktif').innerHTML = `<i class="fa-solid fa-file-signature"></i> Ujian ${jenisEvaluasiAktif.toUpperCase()}`;
+            
+            // Render soal ujian ke dalam wadah dinamis
+            renderSoalDinamis(portalData[kelasKey][jenisEvaluasiAktif], 'container-soal-dinamis', 'ujian');
+            
+            // Tampilkan kembali tombol submit jika sebelumnya sempat disembunyikan
+            document.getElementById('btn-submit-ujian-dinamis').style.display = 'block';
+            document.getElementById('waktu-timer').parentElement.style.display = 'block';
+
+            jalankanTimer(durasiUjian);
+        }
+
+        function jalankanTimer(durasiDetik) {
+            let waktu = durasiDetik;
+            clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                let m = Math.floor(waktu / 60);
+                let d = waktu % 60;
+                document.getElementById('waktu-timer').innerText = (m < 10 ? "0" + m : m) + ":" + (d < 10 ? "0" + d : d);
+                
+                if (--waktu < 0) {
+                    clearInterval(timerInterval);
+                    alert("Waktu Habis! Jawaban otomatis dikirim.");
+                    submitEvaluasi(); 
+                }
+            }, 1000);
         }
 
         function submitEvaluasi() {
