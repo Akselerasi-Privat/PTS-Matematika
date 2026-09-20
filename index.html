@@ -1034,43 +1034,6 @@
             switchTab('halaman-token');
         }
 
-        function validasiToken() {
-            const tokenMasuk = document.getElementById('input-token').value.trim().toUpperCase();
-            // Atur token akses di sini:
-            if (jenisEvaluasiAktif === 'pts' && tokenMasuk === 'PTS2026') mulaiUjian();
-            else if (jenisEvaluasiAktif === 'pas' && tokenMasuk === 'PAS2026') mulaiUjian();
-            else document.getElementById('pesan-error-token').style.display = 'block';
-        }
-
-        function mulaiUjian() {
-            const kelasKey = currentUser.kelas_id || currentUser.kelas;
-            switchTab('halaman-ujian-aktif');
-            
-            document.getElementById('ujian-main-content').style.display = 'block';
-            document.getElementById('hasil-ujian-dinamis').style.display = 'none';
-            document.getElementById('judul-ujian-aktif').innerHTML = `<i class="fa-solid fa-file-signature"></i> Ujian ${jenisEvaluasiAktif.toUpperCase()}`;
-            
-            renderSoalDinamis(portalData[kelasKey][jenisEvaluasiAktif], 'container-soal-dinamis', 'ujian');
-            jalankanTimer(durasiUjian);
-        }
-
-        function jalankanTimer(durasiDetik) {
-            let waktu = durasiDetik;
-            clearInterval(timerInterval);
-            
-            timerInterval = setInterval(() => {
-                let m = Math.floor(waktu / 60);
-                let d = waktu % 60;
-                document.getElementById('waktu-timer').innerText = (m < 10 ? "0" + m : m) + ":" + (d < 10 ? "0" + d : d);
-                
-                if (--waktu < 0) {
-                    clearInterval(timerInterval);
-                    alert("Waktu Habis! Jawaban otomatis dikirim.");
-                    submitEvaluasi(true); 
-                }
-            }, 1000);
-        }
-
         function submitEvaluasi() {
     clearInterval(timerInterval); // Hentikan timer saat submit
     const kelasKey = currentUser.kelas_id || currentUser.kelas;
@@ -1078,8 +1041,10 @@
     let score = 0;
 
     soalList.forEach((q, index) => {
-        const inputs = Array.from(document.querySelectorAll(`input[name="soal_${index}"]:checked`)).map(el => parseInt(el.value));
+        // PERBAIKAN: Ubah "soal_" menjadi "ujian_" agar sesuai dengan renderSoalDinamis saat ujian
+        const inputs = Array.from(document.querySelectorAll(`input[name="ujian_${index}"]:checked`)).map(el => parseInt(el.value));
         const isPGK = q.type && q.type.toLowerCase() === 'pgk';
+        
         if (isPGK && JSON.stringify(inputs.sort()) === JSON.stringify((q.answers || []).sort())) {
             score++;
         } else if (!isPGK && inputs[0] === q.answer) {
@@ -1097,13 +1062,13 @@
 
     // PENGATURAN NOMOR WA BERDASARKAN KELAS
     const kontakGuru = {
-        "4A": "6285705604801", // Pak Fikri
-        "4B": "6285705604801", // Pak Fikri
-        "5A": "6285705604801", // Pak Fikri
-        "6A": "6289691870961", // Pak Rio
-        "7A": "6289691870961", // Pak Rio
-        "8A": "6289691870961", // Pak Rio
-        "9A": "6289691870961"  // Pak Rio
+        "4A": "6285705604801",
+        "4B": "6285705604801",
+        "5A": "6285705604801",
+        "6A": "6289691870961",
+        "7A": "6289691870961",
+        "8A": "6289691870961",
+        "9A": "6289691870961"
     };
 
     const noWaTujuan = kontakGuru[kelasKey] || "6289691870961";
