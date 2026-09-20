@@ -557,13 +557,13 @@
         // ================== DAFTAR NOMOR WA GURU ==================
         // Ganti nomor di bawah ini sesuai dengan nomor HP guru pengajar masing-masing kelas.
         const daftarKontakGuru = {
-            "4A": "6280000000000",
-            "4B": "6280000000000",
-            "5A": "6280000000000",
-            "6A": "6289691870961", // Nomor kontak Pak Rio
-            "7A": "6281111111111",
-            "8A": "6281111111111",
-            "9A": "6281111111111"
+            "4A": "6285705604801",
+            "4B": "6285705604801",
+            "5A": "6285705604801",
+            "6A": "6289691870961",
+            "7A": "6289691870961",
+            "8A": "6289691870961",
+            "9A": "6289691870961"
         };
 
         // ================= DATABASE SOAL ASLI (DEFAULT KEMBALI 100%) =================
@@ -933,7 +933,13 @@
             
             const feedbackDiv = document.getElementById(`feed_${index}`);
             feedbackDiv.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
-            let expl = q.explanations && q.explanations[val] ? q.explanations[val] : "Lihat catatan materi.";
+            if (q.explanation) {
+        expl = q.explanation;
+    } else if (q.correct_feedback && q.incorrect_feedback) {
+        expl = isCorrect ? q.correct_feedback : q.incorrect_feedback;
+    } else if (q.explanations && q.explanations[val]) {
+        expl = q.explanations[val];
+    }
             feedbackDiv.innerHTML = `<strong>${isCorrect ? 'Benar Sekali!' : 'Masih Kurang Tepat!'}</strong><br><br>${expl}`;
             feedbackDiv.style.display = 'block';
 
