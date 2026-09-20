@@ -85,7 +85,8 @@
         .class-title h3 { font-size: 16px; color: #1e293b; }
         .class-title p { font-size: 12px; color: #64748b; }
         .class-desc { font-size: 13px; color: #475569; margin-bottom: 20px; flex: 1; }
-        .btn-masuk { background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; }
+        .btn-masuk { background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-masuk:hover { opacity: 0.9; }
         .btn-masuk.btn-green { background: #10b981; }
         .btn-masuk.btn-purple { background: #8b5cf6; }
         .btn-masuk.btn-orange { background: #f97316; }
@@ -126,7 +127,6 @@
         .quiz-wrapper { display: flex; justify-content: center; padding: 10px; }
         .quiz-container { background: white; padding: 35px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 800px; width: 100%; border: 1px solid #e2e8f0; }
         .pgk-note { font-size: 12px; color: #ea580c; font-weight: bold; display: block; margin-bottom: 15px; background: #fff7ed; padding: 5px 10px; border-radius: 4px;}
-        #quiz-content, #result-content, #blocked-content { display: none; }
         .score-card { background: #f0f9ff; border: 2px dashed #3b82f6; padding: 30px; text-align: center; border-radius: 12px; margin: 25px 0; }
         .score-card h1 { font-size: 60px; color: #1d4ed8; margin: 15px 0; }
         .warning-text { color: #dc2626; font-weight: bold; text-align: center; font-size: 16px;}
@@ -134,8 +134,9 @@
         .btn-submit { background-color: #2563eb; color: white; border: none; padding: 12px; width: 100%; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; }
         .badge-kelas { background: #3b82f6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
 
-        /* ================= PANEL GURU (TAMBAHAN) ================= */
-        .guru-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
+        /* ================= PANEL GURU ================= */
+        .guru-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        @media (min-width: 1024px) { .guru-grid { grid-template-columns: 1fr 1fr 1fr; } }
         .upload-card { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 20px; border-radius: 10px; text-align: center; }
         .upload-card h3 { color: #1e293b; font-size: 16px; margin-bottom: 10px; }
         .upload-card p { font-size: 12px; color: #64748b; margin-bottom: 15px; line-height: 1.4; }
@@ -223,7 +224,8 @@
             <li id="nav-beranda" class="active" onclick="switchTab('beranda')"><i class="fa-solid fa-house"></i> Beranda</li>
             <li id="nav-kisi-kisi" onclick="switchTab('kisi-kisi')"><i class="fa-solid fa-file-lines"></i> Kisi-kisi Ujian</li>
             <li id="nav-latihan" onclick="switchTab('latihan')"><i class="fa-solid fa-book-open"></i> Latihan Soal</li>
-            <li id="nav-quiz" onclick="switchTab('quiz')"><i class="fa-solid fa-stopwatch"></i> Quiz Ujian</li>
+            <li id="nav-tugas" onclick="switchTab('tugas')"><i class="fa-solid fa-book"></i> Tugas Soal</li>
+            <li id="nav-menu-ujian" onclick="switchTab('menu-ujian')"><i class="fa-solid fa-file-signature"></i> Soal Ujian</li>
             <li id="nav-panel-guru" style="display: none;" onclick="switchTab('panel-guru')"><i class="fa-solid fa-chalkboard-user"></i> Kelola Materi</li>
         </ul>
         <div class="sidebar-footer">
@@ -240,7 +242,7 @@
         <header class="top-header">
             <div class="search-bar">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Cari materi, latihan, atau quiz...">
+                <input type="text" placeholder="Cari materi, latihan, atau tugas...">
             </div>
             <div class="user-profile">
                 <i class="fa-regular fa-bell"></i>
@@ -260,7 +262,7 @@
             <div id="panel-guru" class="page-section">
                 <div class="pane-container">
                     <h2><i class="fa-solid fa-chalkboard-user"></i> Dashboard Guru - Kelola Perangkat Ujian</h2>
-                    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Pilih kelas target, lalu unggah file Anda. Database Supabase akan otomatis diperbarui dan langsung tampil di perangkat siswa.</p>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Pilih kelas target, lalu unggah file JSON Anda. Database Supabase akan otomatis diperbarui dan langsung tampil di perangkat siswa.</p>
                     
                     <div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; display: inline-block;">
                         <label style="font-weight: bold; font-size: 14px; color: #1e293b; margin-right: 10px;">Pilih Kelas Target: </label>
@@ -293,11 +295,27 @@
                         </div>
 
                         <div class="upload-card">
-                            <h3>3. Quiz Ujian</h3>
-                            <p>Unggah struktur Array JSON (Soal PG/PGK khusus Ujian).</p>
-                            <input type="file" id="file-quiz" class="file-input" accept=".json,.txt">
-                            <button class="btn-upload" onclick="uploadMateri('quiz')"><i class="fa-solid fa-upload"></i> Unggah Quiz</button>
-                            <div class="alert-success" id="alert-quiz"><i class="fa-solid fa-check"></i> Tersimpan di Supabase!</div>
+                            <h3>3. Tugas Soal</h3>
+                            <p>Unggah struktur Array JSON (Soal PG/PGK).</p>
+                            <input type="file" id="file-tugas" class="file-input" accept=".json,.txt">
+                            <button class="btn-upload" onclick="uploadMateri('tugas')"><i class="fa-solid fa-upload"></i> Unggah Tugas</button>
+                            <div class="alert-success" id="alert-tugas"><i class="fa-solid fa-check"></i> Tersimpan di Supabase!</div>
+                        </div>
+
+                        <div class="upload-card">
+                            <h3>4. Soal PTS</h3>
+                            <p>Unggah struktur Array JSON khusus ujian PTS.</p>
+                            <input type="file" id="file-pts" class="file-input" accept=".json,.txt">
+                            <button class="btn-upload" onclick="uploadMateri('pts')" style="background:#2563eb;"><i class="fa-solid fa-upload"></i> Unggah PTS</button>
+                            <div class="alert-success" id="alert-pts"><i class="fa-solid fa-check"></i> Tersimpan di Supabase!</div>
+                        </div>
+
+                        <div class="upload-card">
+                            <h3>5. Soal PAS</h3>
+                            <p>Unggah struktur Array JSON khusus ujian PAS.</p>
+                            <input type="file" id="file-pas" class="file-input" accept=".json,.txt">
+                            <button class="btn-upload" onclick="uploadMateri('pas')" style="background:#8b5cf6;"><i class="fa-solid fa-upload"></i> Unggah PAS</button>
+                            <div class="alert-success" id="alert-pas"><i class="fa-solid fa-check"></i> Tersimpan di Supabase!</div>
                         </div>
                     </div>
                 </div>
@@ -311,7 +329,7 @@
                             <div class="welcome-text">
                                 <p style="margin-bottom: 5px;">Selamat Belajar,</p>
                                 <h2 id="banner-username">Siswa</h2>
-                                <p>Selamat datang di portal Akselerasi Privat.<br>Pilih kelas Anda, pelajari materinya, dan selesaikan latihan serta quiz untuk melihat kemajuan belajar Anda.</p>
+                                <p>Selamat datang di portal Akselerasi Privat.<br>Pilih kelas Anda, pelajari materinya, dan selesaikan tugas serta ujian untuk melihat kemajuan belajar Anda.</p>
                                 <button class="btn-primary" onclick="switchTab('latihan')">Mulai Latihan <i class="fa-solid fa-arrow-right"></i></button>
                             </div>
                             <div class="welcome-img">
@@ -377,8 +395,8 @@
                                 <h3><i class="fa-solid fa-chart-column"></i> Progres Penilaian Anda</h3>
                             </div>
                             <div class="progress-item">
-                                <div class="progress-info"><span id="prog-title-1">Kelas Aktif</span><span id="prog-val-1">0/100</span></div>
-                                <div class="progress-bar"><div class="progress-fill" id="prog-bar-1" style="width: 0%;"></div></div>
+                                <div class="progress-info"><span id="prog-title-1">Kelas Aktif</span><span id="prog-val-1">Terpilih</span></div>
+                                <div class="progress-bar"><div class="progress-fill" id="prog-bar-1" style="width: 100%;"></div></div>
                             </div>
                             <div class="progress-item">
                                 <div class="progress-info"><span>Latihan Mandiri Selesai</span><span id="prog-val-2">0 Soal</span></div>
@@ -395,7 +413,7 @@
                                     <div class="announce-date"><span>18</span><small>Sep</small></div>
                                     <div class="announce-content">
                                         <h4>Portal Kelas 6A Siap</h4>
-                                        <p>25 Soal Latihan lengkap dengan pembahasan dan 20 soal quiz sudah aktif. Data sinkron ke Database!</p>
+                                        <p>25 Soal Latihan lengkap dengan pembahasan dan 20 soal tugas sudah aktif. Data sinkron ke Database!</p>
                                     </div>
                                 </div>
                             </div>
@@ -407,7 +425,7 @@
             <!-- KISI-KISI UJIAN -->
             <div id="kisi-kisi" class="page-section">
                 <div class="pane-container">
-                    <span class="badge-kelas" id="badge-kisi-kelas">Kelas 6A</span>
+                    <span class="badge-kelas" id="badge-kisi-kelas">Kelas</span>
                     <h2><i class="fa-solid fa-file-lines"></i> Kisi-Kisi Soal Ujian</h2>
                     <div id="kisi-kisi-content"></div>
                 </div>
@@ -416,41 +434,106 @@
             <!-- LATIHAN SOAL INTERAKTIF -->
             <div id="latihan" class="page-section">
                 <div class="pane-container">
-                    <span class="badge-kelas" id="badge-latihan-kelas">Kelas 6A</span>
+                    <span class="badge-kelas" id="badge-latihan-kelas">Kelas</span>
                     <h2><i class="fa-solid fa-book-open"></i> Latihan Soal Interaktif</h2>
                     <p style="font-size: 14px; margin-bottom: 25px; color: #64748b;">Pilih jawaban terbaik lalu klik tombol <strong>Cek Pembahasan</strong>.</p>
                     <div id="latihan-container"></div>
                 </div>
             </div>
 
-            <!-- QUIZ UJIAN -->
-            <div id="quiz" class="page-section">
+            <!-- TUGAS SOAL -->
+            <div id="tugas" class="page-section">
                 <div class="quiz-wrapper">
                     <div class="quiz-container">
-                        <div id="blocked-content">
+                        <div id="tugas-blocked-content" style="display:none;">
                             <h2>⚠️ Akses Ditolak</h2>
-                            <p class="warning-text" style="margin-top:15px;">Kamu sudah menyelesaikan Quiz ini.</p>
-                            <p style="text-align: center; color: #64748b;">Ujian hanya bisa disubmit satu kali. Progres nilai Anda telah tersimpan permanen.</p>
+                            <p class="warning-text" style="margin-top:15px;">Kamu sudah menyelesaikan Tugas ini.</p>
+                            <p style="text-align: center; color: #64748b;">Tugas hanya bisa disubmit satu kali.</p>
                         </div>
 
-                        <div id="quiz-content">
-                            <span class="badge-kelas" id="badge-quiz-kelas">Kelas 6A</span>
-                            <h2 style="margin-bottom: 5px;"><i class="fa-solid fa-stopwatch"></i> Ujian Evaluasi Pembelajaran</h2>
-                            <p style="text-align: center; color: #64748b; margin-bottom: 25px;">Kerjakan soal dengan teliti! Hanya bisa disubmit 1 kali.</p>
-                            <div id="ujian-container"></div>
-                            <button id="btn-submit-ujian" class="btn-submit" onclick="submitQuiz()"><i class="fa-solid fa-paper-plane"></i> Kirim Jawaban & Lihat Skor</button>
+                        <div id="tugas-content">
+                            <span class="badge-kelas" id="badge-tugas-kelas">Kelas</span>
+                            <h2 style="margin-bottom: 5px;"><i class="fa-solid fa-book"></i> Tugas Evaluasi Pembelajaran</h2>
+                            <p style="text-align: center; color: #64748b; margin-bottom: 25px;">Kerjakan tugas dengan teliti! Hanya bisa disubmit 1 kali.</p>
+                            <div id="tugas-container-list"></div>
+                            <button id="btn-submit-tugas" class="btn-submit" onclick="submitTugas()"><i class="fa-solid fa-paper-plane"></i> Kirim Jawaban & Lihat Skor</button>
                         </div>
 
-                        <div id="result-content">
-                            <h2>🎉 Ujian Selesai!</h2>
-                            <p style="text-align: center; margin-top:10px;">Terima kasih, <strong id="display-name" style="color:#2563eb;"></strong>.</p>
+                        <div id="tugas-result-content" style="display:none;">
+                            <h2>🎉 Tugas Selesai!</h2>
+                            <p style="text-align: center; margin-top:10px;">Terima kasih, <strong id="display-name-tugas" style="color:#2563eb;"></strong>.</p>
                             <div class="score-card">
-                                <p style="font-weight:bold; color:#475569;">NILAI UJIAN KAMU:</p>
-                                <h1 id="display-score">100</h1>
+                                <p style="font-weight:bold; color:#475569;">NILAI TUGAS KAMU:</p>
+                                <h1 id="display-score-tugas">100</h1>
                             </div>
-                            <p class="warning-text">📸 PENTING: Lakukan Screenshot halaman ini sekarang!</p>
-                            <p style="text-align: center; font-size: 14px; color:#64748b; margin: 15px 0;">Klik tombol di bawah ini untuk mengirim bukti nilaimu langsung ke WhatsApp Pak Rio.</p>
-                            <a href="#" id="wa-link" class="btn-wa-submit" target="_blank"><i class="fa-brands fa-whatsapp"></i> Kirim Screenshot ke WA Pak Rio</a>
+                            <p class="warning-text">📸 Lakukan Screenshot halaman ini!</p>
+                            <a href="#" id="wa-link-tugas" class="btn-wa-submit" target="_blank"><i class="fa-brands fa-whatsapp"></i> Kirim ke WhatsApp Guru</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MENU UJIAN UTAMA -->
+            <div id="menu-ujian" class="page-section">
+                <div class="pane-container">
+                    <h2><i class="fa-solid fa-file-signature"></i> Menu Ujian</h2>
+                    <p style="color: #64748b; margin-bottom: 25px;">Pilih jenis evaluasi yang akan dikerjakan.</p>
+                    <div class="guru-grid" style="grid-template-columns: 1fr 1fr; max-width: 600px; margin: 0 auto;">
+                        <div class="class-card" style="text-align: center; cursor: pointer;" onclick="mintaToken('pts')">
+                            <div style="font-size: 40px; color: #2563eb; margin-bottom: 15px;"><i class="fa-solid fa-file-pen"></i></div>
+                            <h3>Ujian PTS</h3>
+                            <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">Penilaian Tengah Semester</p>
+                        </div>
+                        <div class="class-card" style="text-align: center; cursor: pointer;" onclick="mintaToken('pas')">
+                            <div style="font-size: 40px; color: #10b981; margin-bottom: 15px;"><i class="fa-solid fa-file-invoice"></i></div>
+                            <h3>Ujian PAS</h3>
+                            <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">Penilaian Akhir Semester</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HALAMAN INPUT TOKEN -->
+            <div id="halaman-token" class="page-section">
+                <div class="pane-container" style="text-align: center; max-width: 450px; margin: 40px auto;">
+                    <div style="font-size: 50px; color: #f59e0b; margin-bottom: 15px;"><i class="fa-solid fa-lock"></i></div>
+                    <h2>Masukkan Kode Akses</h2>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Silakan masukkan token dari guru untuk memulai ujian ini.</p>
+                    <input type="text" id="input-token" placeholder="Ketik kode (Misal: UJIAN123)" style="width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #cbd5e1; font-size: 16px; text-align: center; margin-bottom: 15px; font-weight: bold; outline: none;">
+                    <p id="pesan-error-token" style="color: #dc2626; font-size: 13px; font-weight: bold; display: none; margin-bottom: 15px;">❌ Kode akses salah!</p>
+                    <button class="btn-masuk" onclick="validasiToken()" style="padding: 15px; font-size: 16px;"><i class="fa-solid fa-key"></i> Buka Soal Ujian</button>
+                </div>
+            </div>
+
+            <!-- HALAMAN UJIAN AKTIF (PTS / PAS) -->
+            <div id="halaman-ujian-aktif" class="page-section">
+                <div class="quiz-wrapper">
+                    <div class="quiz-container">
+                        <div id="ujian-blocked-content" style="display:none;">
+                            <h2>⚠️ Akses Ditolak</h2>
+                            <p class="warning-text" style="margin-top:15px;">Kamu sudah menyelesaikan Ujian ini.</p>
+                        </div>
+
+                        <div id="ujian-main-content">
+                            <h2 id="judul-ujian-aktif" style="margin-bottom: 5px;"><i class="fa-solid fa-file-signature"></i> Lembar Ujian</h2>
+                            
+                            <!-- Timer Display -->
+                            <div style="background: #fee2e2; border: 2px solid #f87171; color: #991b1b; padding: 15px; text-align: center; font-size: 22px; font-weight: bold; border-radius: 10px; margin-bottom: 25px;">
+                                <i class="fa-solid fa-clock"></i> Sisa Waktu: <span id="waktu-timer">00:00</span>
+                            </div>
+                            
+                            <div id="container-soal-dinamis"></div>
+                            <button id="btn-submit-ujian-dinamis" class="btn-submit" onclick="submitEvaluasi()"><i class="fa-solid fa-paper-plane"></i> Kirim Jawaban Akhir</button>
+                        </div>
+
+                        <!-- Hasil Ujian Aktif -->
+                        <div id="hasil-ujian-dinamis" style="display:none; margin-top:20px;">
+                            <div class="score-card">
+                                <p style="font-weight:bold; color:#475569;">NILAI UJIAN ANDA:</p>
+                                <h1 id="skor-ujian-dinamis">0</h1>
+                            </div>
+                            <p class="warning-text">📸 Jangan lupa Screenshot halaman ini!</p>
+                            <a href="#" id="wa-link-dinamis" class="btn-wa-submit" target="_blank"><i class="fa-brands fa-whatsapp"></i> Laporkan Nilai ke WhatsApp Guru</a>
                         </div>
                     </div>
                 </div>
@@ -471,11 +554,23 @@
 
         let currentUser = null;
 
-        // ================= DATABASE SOAL ASLI (DEFAULT) =================
+        // ================== DAFTAR NOMOR WA GURU ==================
+        // Ganti nomor di bawah ini sesuai dengan nomor HP guru pengajar masing-masing kelas.
+        const daftarKontakGuru = {
+            "4A": "6280000000000",
+            "4B": "6280000000000",
+            "5A": "6280000000000",
+            "6A": "6289691870961", // Nomor kontak Pak Rio
+            "7A": "6281111111111",
+            "8A": "6281111111111",
+            "9A": "6281111111111"
+        };
+
+        // ================= DATABASE SOAL ASLI (DEFAULT KEMBALI 100%) =================
         const defaultPortalData = {
-            "4A": { namaMapel: "Kelas 4A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] },
-            "4B": { namaMapel: "Kelas 4B - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] },
-            "5A": { namaMapel: "Kelas 5A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] },
+            "4A": { namaMapel: "Kelas 4A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], tugas: [], pts: [], pas: [] },
+            "4B": { namaMapel: "Kelas 4B - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], tugas: [], pts: [], pas: [] },
+            "5A": { namaMapel: "Kelas 5A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], tugas: [], pts: [], pas: [] },
             "6A": {
                 namaMapel: "Kelas 6A - Matematika",
                 kisi2: `<h3>Materi yang Diujikan</h3>
@@ -540,7 +635,7 @@
                     { type: "pg", q: "24. Dalam aturan operasi hitung campuran, manakah yang harus dikerjakan terlebih dahulu?", options: ["A. Penjumlahan", "B. Pengurangan", "C. Operasi di dalam tanda kurung", "D. Dari kiri ke kanan bebas"], answer: 2, explanations: ["Salah.", "Salah.", "Tepat Sekali! Tanda kurung selalu diprioritaskan paling awal.", "Salah."] },
                     { type: "pg", q: "25. Pasangan nilai pecahan dan desimal berikut yang setara adalah...", options: ["A. 1/5 sama dengan 0,2", "B. 3/4 sama dengan 0,34", "C. 1/2 sama dengan 0,25", "D. 0,1 sama dengan 1%"], answer: 0, explanations: ["Tepat Sekali! 1/5 = 2/10 = 0,2.", "Salah, 3/4 = 0,75.", "Salah, 1/2 = 0,5.", "Salah, 0,1 = 10%."] }
                 ],
-                quiz: [
+                tugas: [
                     { type: 'pg', q: "1. Pada bilangan 3.542.100, angka 5 menempati nilai tempat...", options: ["A. Ratusan ribu", "B. Puluhan ribu", "C. Jutaan", "D. Ribuan"], answer: 0 },
                     { type: 'pg', q: "2. Urutkan bilangan berikut dari yang terbesar ke terkecil: 12.300, 12.030, 13.200, 12.330", options: ["A. 13.200, 12.330, 12.300, 12.030", "B. 12.030, 12.300, 12.330, 13.200", "C. 13.200, 12.300, 12.330, 12.030", "D. 12.330, 13.200, 12.300, 12.300"], answer: 0 },
                     { type: 'pg', q: "3. Ibu mempunyai 120 permen. Permen tersebut dibagikan kepada 3 anak. Jika setiap anak mendapat 25 permen, berapakah sisa permen Ibu sekarang?", options: ["A. 75 permen", "B. 45 permen", "C. 25 permen", "D. 35 permen"], answer: 1 },
@@ -561,11 +656,13 @@
                     { type: 'pgk', q: "18. Diketahui bilangan 12 dan 18. Pernyataan yang BENAR mengenai dua bilangan tersebut adalah... (Pilih dua jawaban benar)", options: ["A. FPB dari bilangan tersebut adalah 6", "B. KPK dari bilangan tersebut adalah 36", "C. FPB dari bilangan tersebut adalah 4", "D. KPK dari bilangan tersebut adalah 24"], answers: [0, 1] },
                     { type: 'pgk', q: "19. Berdasarkan aturan KABATAKU, manakah aturan yang BENAR? (Pilih dua jawaban benar)", options: ["A. Operasi perkalian dikerjakan sebelum operasi penjumlahan", "B. Operasi penjumlahan dikerjakan sebelum pembagian", "C. Operasi di dalam tanda kurung dikerjakan paling akhir", "D. Operasi pembagian dan perkalian memiliki kedudukan setara"], answers: [0, 3] },
                     { type: 'pgk', q: "20. Pasangan bentuk pecahan, desimal, atau persen berikut yang bernilai SAMA (senilai) adalah... (Pilih dua jawaban benar)", options: ["A. 0,2 senilai dengan 20%", "B. 3/4 senilai dengan 0,75", "C. 1/5 senilai dengan 50%", "D. 0,1 senilai dengan 1%"], answers: [0, 1] }
-                ]
+                ],
+                pts: [],
+                pas: []
             },
-            "7A": { namaMapel: "Kelas 7A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] },
-            "8A": { namaMapel: "Kelas 8A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] },
-            "9A": { namaMapel: "Kelas 9A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] }
+            "7A": { namaMapel: "Kelas 7A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], tugas: [], pts: [], pas: [] },
+            "8A": { namaMapel: "Kelas 8A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], tugas: [], pts: [], pas: [] },
+            "9A": { namaMapel: "Kelas 9A - Matematika", kisi2: "<h3>Belum ada materi</h3>", latihan: [], tugas: [], pts: [], pas: [] }
         };
 
         let portalData = JSON.parse(JSON.stringify(defaultPortalData));
@@ -578,27 +675,21 @@
                 
                 if (materiData && materiData.length > 0) {
                     materiData.forEach(row => {
-                        // Mencegah error jika kelas_id dari database tidak dikenali di struktur lokal
                         if (!portalData[row.kelas_id]) {
-                            portalData[row.kelas_id] = { namaMapel: "Kelas " + row.kelas_id, kisi2: "<h3>Belum ada materi</h3>", latihan: [], quiz: [] };
+                            portalData[row.kelas_id] = { namaMapel: "Kelas " + row.kelas_id, kisi2: "<h3>Belum ada</h3>", latihan: [], tugas: [], pts: [], pas: [] };
                         }
                         
                         if(row.nama_mapel) portalData[row.kelas_id].namaMapel = row.nama_mapel;
                         if(row.kisi_kisi) portalData[row.kelas_id].kisi2 = row.kisi_kisi;
                         
-                        // Memastikan data Latihan diparse dengan benar menjadi Array
-                        if(row.latihan) {
-                            let latData = row.latihan;
-                            if (typeof latData === 'string') try { latData = JSON.parse(latData); } catch(e) {}
-                            if (Array.isArray(latData)) portalData[row.kelas_id].latihan = latData;
-                        }
-                        
-                        // Memastikan data Quiz diparse dengan benar menjadi Array
-                        if(row.quiz) {
-                            let quizData = row.quiz;
-                            if (typeof quizData === 'string') try { quizData = JSON.parse(quizData); } catch(e) {}
-                            if (Array.isArray(quizData)) portalData[row.kelas_id].quiz = quizData;
-                        }
+                        // Parse JSON Data
+                        ['latihan', 'tugas', 'pts', 'pas'].forEach(key => {
+                            if(row[key]) {
+                                let parseData = row[key];
+                                if (typeof parseData === 'string') try { parseData = JSON.parse(parseData); } catch(e) {}
+                                if (Array.isArray(parseData)) portalData[row.kelas_id][key] = parseData;
+                            }
+                        });
                     });
                 }
             } catch (error) {
@@ -629,9 +720,7 @@
             if (existingSession) {
                 try {
                     const parsed = JSON.parse(existingSession);
-                    if (parsed.nama === nama && parsed.role === 'siswa') {
-                        savedUserData = parsed;
-                    }
+                    if (parsed.nama === nama && parsed.role === 'siswa') savedUserData = parsed;
                 } catch(e) {}
             }
 
@@ -640,13 +729,9 @@
                 currentUser.kelas_id = kelasKey;
             } else {
                 currentUser = {
-                    nama: nama,
-                    password: pass,
-                    role: 'siswa',
-                    kelas_id: kelasKey,
-                    quiz_done: false,
-                    score: 0,
-                    latihan_selesai: 0
+                    nama: nama, password: pass, role: 'siswa', kelas_id: kelasKey,
+                    tugas_done: false, pts_done: false, pas_done: false,
+                    skor_tugas: 0, skor_pts: 0, skor_pas: 0, latihan_selesai: 0
                 };
             }
 
@@ -700,7 +785,8 @@
                 document.getElementById('nav-beranda').style.display = 'none';
                 document.getElementById('nav-kisi-kisi').style.display = 'none';
                 document.getElementById('nav-latihan').style.display = 'none';
-                document.getElementById('nav-quiz').style.display = 'none';
+                document.getElementById('nav-tugas').style.display = 'none';
+                document.getElementById('nav-menu-ujian').style.display = 'none';
                 document.getElementById('quote-box-ui').style.display = 'none';
                 if(!isInitialLoad) switchTab('panel-guru');
             } else {
@@ -709,51 +795,40 @@
 
                 document.getElementById('banner-username').innerText = currentUser.nama;
                 document.getElementById('display-user-class').innerText = dataKelas ? dataKelas.namaMapel : "Kelas Tidak Ditemukan";
-                
                 document.getElementById('nav-panel-guru').style.display = 'none';
                 
                 if(dataKelas) {
                     document.getElementById('badge-kisi-kelas').innerText = dataKelas.namaMapel;
                     document.getElementById('badge-latihan-kelas').innerText = dataKelas.namaMapel;
-                    document.getElementById('badge-quiz-kelas').innerText = dataKelas.namaMapel;
+                    document.getElementById('badge-tugas-kelas').innerText = dataKelas.namaMapel;
 
                     document.getElementById('kisi-kisi-content').innerHTML = dataKelas.kisi2;
                     renderLatihan(dataKelas.latihan);
-                    renderUjian(dataKelas.quiz);
+                    renderSoalDinamis(dataKelas.tugas, 'tugas-container-list', 'tugas');
                 }
 
-                if (currentUser.quiz_done) {
-                    document.getElementById('quiz-content').style.display = 'none';
-                    document.getElementById('blocked-content').style.display = 'block';
+                // Cek status Tugas
+                if (currentUser.tugas_done) {
+                    document.getElementById('tugas-content').style.display = 'none';
+                    document.getElementById('tugas-blocked-content').style.display = 'block';
                 } else {
-                    document.getElementById('quiz-content').style.display = 'block';
-                    document.getElementById('blocked-content').style.display = 'none';
+                    document.getElementById('tugas-content').style.display = 'block';
+                    document.getElementById('tugas-blocked-content').style.display = 'none';
                 }
-
-                document.getElementById('prog-title-1').innerText = dataKelas ? dataKelas.namaMapel : "Status";
-                const scoreVal = currentUser.quiz_done ? currentUser.score : 0;
-                document.getElementById('prog-val-1').innerText = `${scoreVal}/100`;
-                document.getElementById('prog-bar-1').style.width = `${scoreVal}%`;
 
                 document.getElementById('prog-val-2').innerText = `${currentUser.latihan_selesai || 0} Soal`;
                 const totalLat = (dataKelas && Array.isArray(dataKelas.latihan) && dataKelas.latihan.length > 0) ? dataKelas.latihan.length : 1;
                 const latPct = Math.min(((currentUser.latihan_selesai || 0) / totalLat) * 100, 100);
                 document.getElementById('prog-bar-2').style.width = `${latPct}%`;
 
-                if(!isInitialLoad) {
-                    switchTab('beranda');
-                }
+                if(!isInitialLoad) switchTab('beranda');
             }
         }
 
         // ================== UPLOAD MATERI (DATABASE) ==================
         async function uploadMateri(kolomDB) {
             const kelasKey = document.getElementById('guru-pilih-kelas').value;
-            let inputId = '';
-            
-            if (kolomDB === 'kisi_kisi') inputId = 'file-kisi';
-            else if (kolomDB === 'latihan') inputId = 'file-latihan';
-            else if (kolomDB === 'quiz') inputId = 'file-quiz';
+            let inputId = 'file-' + (kolomDB === 'kisi_kisi' ? 'kisi' : kolomDB);
 
             const fileInput = document.getElementById(inputId);
             const file = fileInput.files[0];
@@ -763,11 +838,7 @@
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const content = e.target.result;
-                
-                let dataToUpdate = {
-                    kelas_id: kelasKey,
-                    nama_mapel: portalData[kelasKey].namaMapel
-                };
+                let dataToUpdate = { kelas_id: kelasKey, nama_mapel: portalData[kelasKey].namaMapel };
 
                 if (kolomDB === 'kisi_kisi') {
                     dataToUpdate[kolomDB] = content;
@@ -775,13 +846,11 @@
                 } else {
                     try {
                         const jsonData = JSON.parse(content);
-                        if (!Array.isArray(jsonData)) {
-                            return alert('Gagal! Pastikan isi file JSON memiliki struktur Array (diawali [ dan diakhiri ]).');
-                        }
+                        if (!Array.isArray(jsonData)) return alert('Gagal! Pastikan file berupa Array JSON.');
                         dataToUpdate[kolomDB] = jsonData;
                         portalData[kelasKey][kolomDB] = jsonData;
                     } catch (error) {
-                        return alert('Gagal memproses file! Pastikan format file adalah .json yang valid.');
+                        return alert('Gagal! Pastikan format file .json valid.');
                     }
                 }
 
@@ -790,11 +859,10 @@
                     if (error) throw error;
                     tampilkanNotifUpload(kolomDB, 'Tersimpan di Supabase!');
                 } catch (error) {
-                    console.warn("Gagal mengunggah ke database.", error);
-                    tampilkanNotifUpload(kolomDB, 'Hanya tersimpan di perangkat (Offline)');
+                    console.warn("Gagal mengunggah.", error);
+                    tampilkanNotifUpload(kolomDB, 'Tersimpan Offline');
                 }
             };
-            
             reader.readAsText(file);
         }
 
@@ -803,21 +871,16 @@
             alertBox.innerHTML = `<i class="fa-solid fa-check"></i> ${pesan}`;
             alertBox.style.display = 'block';
             setTimeout(() => alertBox.style.display = 'none', 3000);
-            document.getElementById(kolomDB === 'kisi_kisi' ? 'file-kisi' : (kolomDB === 'latihan' ? 'file-latihan' : 'file-quiz')).value = '';
+            document.getElementById('file-' + (kolomDB === 'kisi_kisi' ? 'kisi' : kolomDB)).value = '';
         }
 
         // ================== LOGIC SISWA ==================
         function quickSwitchKelas(kelasKey) {
             if (!currentUser || currentUser.role === 'guru') return;
-            
             currentUser.kelas_id = kelasKey;
-            currentUser.quiz_done = false;
-            currentUser.score = 0;
-            currentUser.latihan_selesai = 0;
-            
             localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
             initSessionUI(true);
-            alert("Kelas berhasil diubah ke " + portalData[kelasKey].namaMapel);
+            alert("Kelas diubah ke " + portalData[kelasKey].namaMapel);
             switchTab('kisi-kisi');
         }
 
@@ -830,13 +893,14 @@
         }
 
         function switchTab(tabId) {
+            clearInterval(timerInterval); // Hentikan timer jika pindah tab saat ujian
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
             
             const tabTarget = document.getElementById(tabId);
             if(tabTarget) tabTarget.classList.add('active');
 
-            const navTarget = document.getElementById('nav-' + tabId);
+            const navTarget = document.getElementById('nav-' + (tabId === 'halaman-ujian-aktif' || tabId === 'halaman-token' ? 'menu-ujian' : tabId));
             if(navTarget) navTarget.classList.add('active');
         }
 
@@ -844,7 +908,7 @@
             const container = document.getElementById('latihan-container');
             container.innerHTML = "";
             if (!Array.isArray(soalList) || soalList.length === 0) {
-                container.innerHTML = `<p style="color:#64748b; text-align:center; padding:30px;">Soal latihan untuk kelas ini belum tersedia.</p>`;
+                container.innerHTML = `<p style="color:#64748b; text-align:center; padding:30px;">Soal latihan belum tersedia.</p>`;
                 return;
             }
             soalList.forEach((q, index) => {
@@ -869,89 +933,165 @@
             
             const feedbackDiv = document.getElementById(`feed_${index}`);
             feedbackDiv.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
-            
-            let explanationText = "Lihat kembali catatan materi.";
-            if (q.explanations && q.explanations[val]) {
-                explanationText = q.explanations[val];
-            }
-
-            feedbackDiv.innerHTML = `<strong>${isCorrect ? 'Benar Sekali!' : 'Masih Kurang Tepat!'}</strong><br><br>${explanationText}`;
+            let expl = q.explanations && q.explanations[val] ? q.explanations[val] : "Lihat catatan materi.";
+            feedbackDiv.innerHTML = `<strong>${isCorrect ? 'Benar Sekali!' : 'Masih Kurang Tepat!'}</strong><br><br>${expl}`;
             feedbackDiv.style.display = 'block';
 
-            if (isCorrect && currentUser && currentUser.role !== 'guru') {
-                let currentLat = currentUser.latihan_selesai || 0;
-                currentUser.latihan_selesai = currentLat + 1;
+            if (isCorrect && currentUser.role !== 'guru') {
+                currentUser.latihan_selesai = (currentUser.latihan_selesai || 0) + 1;
                 localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
                 initSessionUI(true);
             }
         }
 
-        function renderUjian(soalList) {
-            const container = document.getElementById('ujian-container');
-            const btnSubmit = document.getElementById('btn-submit-ujian');
+        function renderSoalDinamis(soalList, containerId, prefixName) {
+            const container = document.getElementById(containerId);
             container.innerHTML = "";
-            
-            if (!Array.isArray(soalList) || soalList.length === 0) {
-                container.innerHTML = `<p style="color:#64748b; text-align:center; padding:30px;">Quiz ujian untuk kelas ini belum tersedia.</p>`;
-                if(btnSubmit) btnSubmit.style.display = 'none';
+            if (!soalList || soalList.length === 0) {
+                container.innerHTML = `<p style="color:#64748b; text-align:center; padding:30px;">Soal belum tersedia.</p>`;
                 return;
             }
-            if(btnSubmit) btnSubmit.style.display = 'block';
-
             soalList.forEach((q, index) => {
                 const isPgk = q.type === 'pgk';
                 let html = `<div class="question-card" style="background:#fff;"><p style="font-weight:bold; margin-bottom:10px;">${q.q}</p>`;
-                if (isPgk) html += `<span class="pgk-note">*Soal Kompleks: Pilih lebih dari satu jawaban (Kotak Centang)</span>`;
+                if (isPgk) html += `<span class="pgk-note">*Soal Kompleks: Pilih lebih dari satu jawaban</span>`;
                 html += `<div class="options">`;
-                
                 q.options.forEach((opt, i) => {
                     const inputType = isPgk ? 'checkbox' : 'radio';
-                    html += `<label style="background:#f8fafc;"><input type="${inputType}" name="uji_q${index}" value="${i}"> ${opt}</label>`;
+                    html += `<label style="background:#f8fafc;"><input type="${inputType}" name="${prefixName}_${index}" value="${i}"> ${opt}</label>`;
                 });
                 html += `</div></div>`;
                 container.innerHTML += html;
             });
         }
 
-        function submitQuiz() {
-            const kelasKey = currentUser.kelas_id || currentUser.kelas;
-            const soalList = portalData[kelasKey].quiz;
+        // ================== LOGIC PENILAIAN ==================
+        function hitungSkor(soalList, prefixName) {
             let score = 0;
             let unanswered = false;
-
             soalList.forEach((q, index) => {
                 if (q.type === 'pgk') {
-                    const selectedBoxes = Array.from(document.querySelectorAll(`input[name="uji_q${index}"]:checked`));
+                    const selectedBoxes = Array.from(document.querySelectorAll(`input[name="${prefixName}_${index}"]:checked`));
                     if (selectedBoxes.length === 0) unanswered = true;
                     else {
-                        const selectedVals = selectedBoxes.map(cb => parseInt(cb.value)).sort();
-                        const correctAnswers = q.answers ? [...q.answers].sort() : [];
-                        if (JSON.stringify(selectedVals) === JSON.stringify(correctAnswers)) score++;
+                        const vals = selectedBoxes.map(cb => parseInt(cb.value)).sort();
+                        const ans = q.answers ? [...q.answers].sort() : [];
+                        if (JSON.stringify(vals) === JSON.stringify(ans)) score++;
                     }
                 } else {
-                    const selected = document.querySelector(`input[name="uji_q${index}"]:checked`);
+                    const selected = document.querySelector(`input[name="${prefixName}_${index}"]:checked`);
                     if (!selected) unanswered = true;
                     else if (parseInt(selected.value) === q.answer) score++;
                 }
             });
+            return { score, unanswered, total: soalList.length };
+        }
 
-            if (unanswered) return alert("Masih ada soal ujian yang belum dijawab!");
+        function getNomorWaGuru(kelasKey) {
+            return daftarKontakGuru[kelasKey] || "6289691870961"; // Default ke no Pak Rio
+        }
 
-            const finalScore = Math.round((score / soalList.length) * 100);
-
-            currentUser.quiz_done = true;
-            currentUser.score = finalScore;
+        function submitTugas() {
+            const kelasKey = currentUser.kelas_id || currentUser.kelas;
+            const soalList = portalData[kelasKey].tugas;
+            const hasil = hitungSkor(soalList, 'tugas');
+            
+            if (hasil.unanswered) return alert("Masih ada soal tugas yang belum dijawab!");
+            
+            const finalScore = Math.round((hasil.score / hasil.total) * 100);
+            
+            currentUser.tugas_done = true;
+            currentUser.skor_tugas = finalScore;
             localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
-            initSessionUI(true);
+            
+            document.getElementById('tugas-content').style.display = 'none';
+            document.getElementById('tugas-result-content').style.display = 'block';
+            document.getElementById('display-name-tugas').innerText = currentUser.nama;
+            document.getElementById('display-score-tugas').innerText = finalScore;
 
-            document.getElementById('quiz-content').style.display = 'none';
-            document.getElementById('result-content').style.display = 'block';
-            document.getElementById('display-name').innerText = currentUser.nama;
-            document.getElementById('display-score').innerText = finalScore;
+            const noWaGuru = getNomorWaGuru(kelasKey);
+            const textPesan = `Assalamu'alaikum Guru Pembimbing, saya *${currentUser.nama}* dari *${portalData[kelasKey].namaMapel}* telah menyelesaikan Tugas.%0A%0A*Nilai Saya: ${finalScore}*`;
+            document.getElementById('wa-link-tugas').href = `https://wa.me/${noWaGuru}?text=${textPesan}`;
+        }
 
-            const noWaPakRio = "6289691870961";
-            const textPesan = `Assalamu'alaikum Pak Rio, saya *${currentUser.nama}* dari *${portalData[kelasKey].namaMapel}* telah menyelesaikan Quiz Ujian.%0A%0A*Nilai Ujian Saya: ${finalScore}*%0A%0ABerikut saya lampirkan bukti screenshotnya. Terima kasih Pak!`;
-            document.getElementById('wa-link').href = `https://wa.me/${noWaPakRio}?text=${textPesan}`;
+
+        // ================== LOGIC UJIAN (TOKEN & TIMER) ==================
+        let jenisEvaluasiAktif = '';
+        let timerInterval;
+        let durasiUjian = 90 * 60; // 90 Menit (dalam detik)
+
+        function mintaToken(jenis) {
+            const kelasKey = currentUser.kelas_id || currentUser.kelas;
+            if (currentUser[jenis + '_done']) return alert(`Kamu sudah menyelesaikan Ujian ${jenis.toUpperCase()} ini.`);
+            
+            if (!portalData[kelasKey][jenis] || portalData[kelasKey][jenis].length === 0) {
+                return alert(`Maaf, Soal ${jenis.toUpperCase()} belum tersedia di kelas ini.`);
+            }
+
+            jenisEvaluasiAktif = jenis;
+            document.getElementById('input-token').value = '';
+            document.getElementById('pesan-error-token').style.display = 'none';
+            switchTab('halaman-token');
+        }
+
+        function validasiToken() {
+            const tokenMasuk = document.getElementById('input-token').value.trim().toUpperCase();
+            // Atur token akses di sini:
+            if (jenisEvaluasiAktif === 'pts' && tokenMasuk === 'PTS2026') mulaiUjian();
+            else if (jenisEvaluasiAktif === 'pas' && tokenMasuk === 'PAS2026') mulaiUjian();
+            else document.getElementById('pesan-error-token').style.display = 'block';
+        }
+
+        function mulaiUjian() {
+            const kelasKey = currentUser.kelas_id || currentUser.kelas;
+            switchTab('halaman-ujian-aktif');
+            
+            document.getElementById('ujian-main-content').style.display = 'block';
+            document.getElementById('hasil-ujian-dinamis').style.display = 'none';
+            document.getElementById('judul-ujian-aktif').innerHTML = `<i class="fa-solid fa-file-signature"></i> Ujian ${jenisEvaluasiAktif.toUpperCase()}`;
+            
+            renderSoalDinamis(portalData[kelasKey][jenisEvaluasiAktif], 'container-soal-dinamis', 'ujian');
+            jalankanTimer(durasiUjian);
+        }
+
+        function jalankanTimer(durasiDetik) {
+            let waktu = durasiDetik;
+            clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                let m = Math.floor(waktu / 60);
+                let d = waktu % 60;
+                document.getElementById('waktu-timer').innerText = (m < 10 ? "0" + m : m) + ":" + (d < 10 ? "0" + d : d);
+                
+                if (--waktu < 0) {
+                    clearInterval(timerInterval);
+                    alert("Waktu Habis! Jawaban otomatis dikirim.");
+                    submitEvaluasi(true); 
+                }
+            }, 1000);
+        }
+
+        function submitEvaluasi(isTimeUp = false) {
+            const kelasKey = currentUser.kelas_id || currentUser.kelas;
+            const soalList = portalData[kelasKey][jenisEvaluasiAktif];
+            const hasil = hitungSkor(soalList, 'ujian');
+
+            if (!isTimeUp && hasil.unanswered) return alert("Masih ada soal ujian yang belum dijawab!");
+
+            clearInterval(timerInterval); // Stop timer
+            const finalScore = Math.round((hasil.score / hasil.total) * 100) || 0;
+            
+            currentUser[jenisEvaluasiAktif + '_done'] = true;
+            currentUser['skor_' + jenisEvaluasiAktif] = finalScore;
+            localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
+
+            document.getElementById('ujian-main-content').style.display = 'none';
+            document.getElementById('hasil-ujian-dinamis').style.display = 'block';
+            document.getElementById('skor-ujian-dinamis').innerText = finalScore;
+
+            const noWaGuru = getNomorWaGuru(kelasKey);
+            const textPesan = `Assalamu'alaikum Guru Pembimbing, saya *${currentUser.nama}* dari *${portalData[kelasKey].namaMapel}* telah selesai mengerjakan *${jenisEvaluasiAktif.toUpperCase()}*.%0A%0A*Nilai Saya: ${finalScore}*%0A%0ABerikut lampiran screenshot saya. Terima kasih.`;
+            document.getElementById('wa-link-dinamis').href = `https://wa.me/${noWaGuru}?text=${textPesan}`;
         }
     </script>
 </body>
