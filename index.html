@@ -1071,28 +1071,46 @@
             }, 1000);
         }
 
-        function submitEvaluasi(isTimeUp = false) {
-            const kelasKey = currentUser.kelas_id || currentUser.kelas;
-            const soalList = portalData[kelasKey][jenisEvaluasiAktif];
-            const hasil = hitungSkor(soalList, 'ujian');
+        function submitEvaluasi() {
+    clearInterval(timerInterval); // Hentikan timer saat submit
+    const kelasKey = currentUser.kelas_id || currentUser.kelas;
+    const soalList = portalData[kelasKey][jenisEvaluasiAktif];
+    let score = 0;
 
-            if (!isTimeUp && hasil.unanswered) return alert("Masih ada soal ujian yang belum dijawab!");
-
-            clearInterval(timerInterval); // Stop timer
-            const finalScore = Math.round((hasil.score / hasil.total) * 100) || 0;
-            
-            currentUser[jenisEvaluasiAktif + '_done'] = true;
-            currentUser['skor_' + jenisEvaluasiAktif] = finalScore;
-            localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
-
-            document.getElementById('ujian-main-content').style.display = 'none';
-            document.getElementById('hasil-ujian-dinamis').style.display = 'block';
-            document.getElementById('skor-ujian-dinamis').innerText = finalScore;
-
-            const noWaGuru = getNomorWaGuru(kelasKey);
-            const textPesan = `Assalamu'alaikum Guru Pembimbing, saya *${currentUser.nama}* dari *${portalData[kelasKey].namaMapel}* telah selesai mengerjakan *${jenisEvaluasiAktif.toUpperCase()}*.%0A%0A*Nilai Saya: ${finalScore}*%0A%0ABerikut lampiran screenshot saya. Terima kasih.`;
-            document.getElementById('wa-link-dinamis').href = `https://wa.me/${noWaGuru}?text=${textPesan}`;
+    soalList.forEach((q, index) => {
+        const inputs = Array.from(document.querySelectorAll(`input[name="soal_${index}"]:checked`)).map(el => parseInt(el.value));
+        const isPGK = q.type && q.type.toLowerCase() === 'pgk';
+        if (isPGK && JSON.stringify(inputs.sort()) === JSON.stringify((q.answers || []).sort())) {
+            score++;
+        } else if (!isPGK && inputs[0] === q.answer) {
+            score++;
         }
+    });
+
+    const finalScore = Math.round((score / soalList.length) * 100) || 0;
+    
+    document.getElementById('container-soal-dinamis').innerHTML = "";
+    document.getElementById('btn-submit-ujian-dinamis').style.display = 'none';
+    document.getElementById('hasil-ujian-dinamis').style.display = 'block';
+    document.getElementById('skor-ujian-dinamis').innerText = finalScore;
+    document.getElementById('waktu-timer').parentElement.style.display = 'none';
+
+    // PENGATURAN NOMOR WA BERDASARKAN KELAS
+    const kontakGuru = {
+        "4A": "6285705604801", // Pak Fikri
+        "4B": "6285705604801", // Pak Fikri
+        "5A": "6285705604801", // Pak Fikri
+        "6A": "6289691870961", // Pak Rio
+        "7A": "6289691870961", // Pak Rio
+        "8A": "6289691870961", // Pak Rio
+        "9A": "6289691870961"  // Pak Rio
+    };
+
+    const noWaTujuan = kontakGuru[kelasKey] || "6289691870961";
+    const pesan = `Assalamu'alaikum, saya *${currentUser.nama}* dari *${portalData[kelasKey].namaMapel}* telah selesai mengerjakan *${jenisEvaluasiAktif.toUpperCase()}*.%0A%0A*Nilai Saya: ${finalScore}*`;
+    
+    document.getElementById('wa-link-dinamis').href = `https://wa.me/${noWaTujuan}?text=${pesan}`;
+}
     </script>
 </body>
 </html>
