@@ -412,14 +412,8 @@
                             <div class="panel-header">
                                 <h3><i class="fa-solid fa-bullhorn"></i> Pengumuman</h3>
                             </div>
-                            <div class="announcement-list">
-                                <div class="announce-item">
-                                    <div class="announce-date"><span>18</span><small>Sep</small></div>
-                                    <div class="announce-content">
-                                        <h4>Portal Kelas 6A Siap</h4>
-                                        <p>25 Soal Latihan lengkap dengan pembahasan dan 20 soal tugas sudah aktif. Data sinkron ke Database!</p>
-                                    </div>
-                                </div>
+                            <div class="announcement-list" id="wadah-pengumuman">
+                                <!-- Pengumuman otomatis akan muncul di sini -->
                             </div>
                         </div>
                     </div>
@@ -778,6 +772,46 @@
             }
         }
 
+        // ================== GENERATOR PENGUMUMAN OTOMATIS ==================
+        function generatePengumuman() {
+            const wadah = document.getElementById('wadah-pengumuman');
+            if(!wadah) return;
+            wadah.innerHTML = ''; // Bersihkan pengumuman lama
+            let jumlahPengumuman = 0;
+
+            // Jika yang login siswa, dia hanya melihat kelasnya. Jika guru, lihat semua.
+            const kelasKeySiswa = (currentUser && currentUser.role === 'siswa') ? (currentUser.kelas_id || currentUser.kelas) : null;
+
+            for (const kelas in portalData) {
+                if (kelasKeySiswa && kelas !== kelasKeySiswa) continue;
+
+                const data = portalData[kelas];
+                let infoMateri = [];
+                
+                // Deteksi otomatis jumlah soal yang ada di database
+                if (data.latihan && data.latihan.length > 0) infoMateri.push(`Latihan (${data.latihan.length} Soal)`);
+                if (data.tugas && data.tugas.length > 0) infoMateri.push(`Tugas (${data.tugas.length} Soal)`);
+                if (data.pts && data.pts.length > 0) infoMateri.push(`PTS Tersedia`);
+                if (data.pas && data.pas.length > 0) infoMateri.push(`PAS Tersedia`);
+
+                if (infoMateri.length > 0) {
+                    jumlahPengumuman++;
+                    wadah.innerHTML += `
+                    <div class="announce-item">
+                        <div class="announce-date" style="background:#dbeafe;"><span style="font-size:18px; color:#2563eb;"><i class="fa-solid fa-bell"></i></span></div>
+                        <div class="announce-content">
+                            <h4>Update ${data.namaMapel}</h4>
+                            <p>Materi baru: <strong>${infoMateri.join(', ')}</strong>. Segera cek dan kerjakan ya!</p>
+                        </div>
+                    </div>`;
+                }
+            }
+
+            if (jumlahPengumuman === 0) {
+                wadah.innerHTML = `<p style="font-size:12px; color:#64748b; text-align:center;">Belum ada materi atau ujian yang diunggah.</p>`;
+            }
+        }
+
         // ================== INISIALISASI UI ==================
         function initSessionUI(isInitialLoad = false) {
             document.getElementById('display-user-name').innerText = currentUser.nama;
@@ -792,6 +826,9 @@
                 document.getElementById('nav-tugas').style.display = 'none';
                 document.getElementById('nav-menu-ujian').style.display = 'none';
                 document.getElementById('quote-box-ui').style.display = 'none';
+                
+                generatePengumuman(); // Panggil pengumuman untuk Guru
+                
                 if(!isInitialLoad) switchTab('panel-guru');
             } else {
                 const kelasKey = currentUser.kelas_id || currentUser.kelas;
@@ -824,6 +861,8 @@
                 const totalLat = (dataKelas && Array.isArray(dataKelas.latihan) && dataKelas.latihan.length > 0) ? dataKelas.latihan.length : 1;
                 const latPct = Math.min(((currentUser.latihan_selesai || 0) / totalLat) * 100, 100);
                 document.getElementById('prog-bar-2').style.width = `${latPct}%`;
+
+                generatePengumuman(); // Panggil pengumuman untuk Siswa
 
                 if(!isInitialLoad) switchTab('beranda');
             }
@@ -862,9 +901,11 @@
                     const { error } = await supabaseClient.from('materi_kelas').upsert(dataToUpdate);
                     if (error) throw error;
                     tampilkanNotifUpload(kolomDB, 'Tersimpan di Supabase!');
+                    generatePengumuman(); // Refresh pengumuman setelah upload berhasil
                 } catch (error) {
                     console.warn("Gagal mengunggah.", error);
                     tampilkanNotifUpload(kolomDB, 'Tersimpan Offline');
+                    generatePengumuman(); // Refresh pengumuman setelah upload lokal
                 }
             };
             reader.readAsText(file);
