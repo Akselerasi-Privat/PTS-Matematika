@@ -130,7 +130,11 @@
         .score-card { background: #f0f9ff; border: 2px dashed #3b82f6; padding: 30px; text-align: center; border-radius: 12px; margin: 25px 0; }
         .score-card h1 { font-size: 60px; color: #1d4ed8; margin: 15px 0; }
         .warning-text { color: #dc2626; font-weight: bold; text-align: center; font-size: 16px;}
-        .btn-wa-submit { background-color: #25d366; color: white; border: none; padding: 15px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; display: block; text-align: center; text-decoration: none; }
+        
+        /* TOMBOL EMAIL BARU */
+        .btn-email-submit { background-color: #ea4335; color: white; border: none; padding: 15px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; display: block; text-align: center; text-decoration: none; transition: 0.3s;}
+        .btn-email-submit:hover { background-color: #c5221f; }
+        
         .btn-submit { background-color: #2563eb; color: white; border: none; padding: 12px; width: 100%; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; }
         .badge-kelas { background: #3b82f6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
 
@@ -202,7 +206,7 @@
                 </div>
                 <div class="form-group-login">
                     <label>Password Akses:</label>
-                    <input type="password" id="input-guru-pass" placeholder="Ketik: Pass guru" required>
+                    <input type="password" id="input-guru-pass" placeholder="Ketik: admin123" required>
                 </div>
                 <button type="submit" class="btn-login" style="background:#10b981;">Masuk sebagai Guru</button>
             </form>
@@ -466,8 +470,8 @@
                                 <p style="font-weight:bold; color:#475569;">NILAI TUGAS KAMU:</p>
                                 <h1 id="display-score-tugas">100</h1>
                             </div>
-                            <p class="warning-text">📸 Lakukan Screenshot halaman ini!</p>
-                            <a href="#" id="wa-link-tugas" class="btn-wa-submit" target="_blank"><i class="fa-brands fa-whatsapp"></i> Kirim ke WhatsApp Guru</a>
+                            <p class="warning-text">Kirimkan rincian jawabanmu ke Bapak/Ibu Guru ya!</p>
+                            <a href="#" id="email-link-tugas" class="btn-email-submit" target="_blank"><i class="fa-solid fa-envelope"></i> Kirim Laporan ke Email Guru</a>
                         </div>
                     </div>
                 </div>
@@ -532,8 +536,8 @@
                                 <p style="font-weight:bold; color:#475569;">NILAI UJIAN ANDA:</p>
                                 <h1 id="skor-ujian-dinamis">0</h1>
                             </div>
-                            <p class="warning-text">📸 Jangan lupa Screenshot halaman ini!</p>
-                            <a href="#" id="wa-link-dinamis" class="btn-wa-submit" target="_blank"><i class="fa-brands fa-whatsapp"></i> Laporkan Nilai ke WhatsApp Guru</a>
+                            <p class="warning-text">Kirimkan rincian jawabanmu ke Bapak/Ibu Guru ya!</p>
+                            <a href="#" id="email-link-dinamis" class="btn-email-submit" target="_blank"><i class="fa-solid fa-envelope"></i> Laporkan Nilai ke Email Guru</a>
                         </div>
                     </div>
                 </div>
@@ -554,16 +558,16 @@
 
         let currentUser = null;
 
-        // ================== DAFTAR NOMOR WA GURU ==================
-        // Ganti nomor di bawah ini sesuai dengan nomor HP guru pengajar masing-masing kelas.
-        const daftarKontakGuru = {
-            "4A": "6285705604801",
-            "4B": "6285705604801",
-            "5A": "6285705604801",
-            "6A": "6289691870961",
-            "7A": "6289691870961",
-            "8A": "6289691870961",
-            "9A": "6289691870961"
+        // ================== DAFTAR EMAIL GURU ==================
+        // Ganti email di bawah ini sesuai dengan alamat email Bapak/Ibu Guru pengajar.
+        const daftarEmailGuru = {
+            "4A": "emailpulih69@gmail.com",
+            "4B": "emailpulih69@gmail.com",
+            "5A": "emailpulih69@gmail.com",
+            "6A": "emailpulih69@gmail.com",
+            "7A": "emailpulih69@gmail.com",
+            "8A": "emailpulih69@gmail.com",
+            "9A": "emailpulih69@gmail.com"
         };
 
         // ================= DATABASE SOAL ASLI (DEFAULT KEMBALI 100%) =================
@@ -933,13 +937,14 @@
             
             const feedbackDiv = document.getElementById(`feed_${index}`);
             feedbackDiv.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+            let expl = "";
             if (q.explanation) {
-        expl = q.explanation;
-    } else if (q.correct_feedback && q.incorrect_feedback) {
-        expl = isCorrect ? q.correct_feedback : q.incorrect_feedback;
-    } else if (q.explanations && q.explanations[val]) {
-        expl = q.explanations[val];
-    }
+                expl = q.explanation;
+            } else if (q.correct_feedback && q.incorrect_feedback) {
+                expl = isCorrect ? q.correct_feedback : q.incorrect_feedback;
+            } else if (q.explanations && q.explanations[val]) {
+                expl = q.explanations[val];
+            }
             feedbackDiv.innerHTML = `<strong>${isCorrect ? 'Benar Sekali!' : 'Masih Kurang Tepat!'}</strong><br><br>${expl}`;
             feedbackDiv.style.display = 'block';
 
@@ -971,36 +976,62 @@
             });
         }
 
-        // ================== LOGIC PENILAIAN ==================
-        function hitungSkor(soalList, prefixName) {
+        // ================== LOGIC PENILAIAN & EMAIL GENERATOR ==================
+        function hitungSkorDetail(soalList, prefixName) {
             let score = 0;
             let unanswered = false;
+            let detailText = "";
+
             soalList.forEach((q, index) => {
-                if (q.type === 'pgk') {
+                let isPGK = q.type && q.type.toLowerCase() === 'pgk';
+                let status = "❌ SALAH";
+                let jawabanSiswaText = "Tidak Menjawab";
+                let jawabanBenarText = "";
+
+                // Bersihkan tag HTML dari teks soal agar rapi di email
+                let qText = q.q.replace(/<[^>]*>?/gm, '');
+
+                if (isPGK) {
                     const selectedBoxes = Array.from(document.querySelectorAll(`input[name="${prefixName}_${index}"]:checked`));
-                    if (selectedBoxes.length === 0) unanswered = true;
-                    else {
+                    const ans = q.answers ? [...q.answers].sort() : [];
+                    jawabanBenarText = ans.map(a => q.options[a].replace(/<[^>]*>?/gm, '')).join(", ");
+                    
+                    if (selectedBoxes.length === 0) {
+                        unanswered = true;
+                    } else {
                         const vals = selectedBoxes.map(cb => parseInt(cb.value)).sort();
-                        const ans = q.answers ? [...q.answers].sort() : [];
-                        if (JSON.stringify(vals) === JSON.stringify(ans)) score++;
+                        jawabanSiswaText = vals.map(v => q.options[v].replace(/<[^>]*>?/gm, '')).join(", ");
+
+                        if (JSON.stringify(vals) === JSON.stringify(ans)) {
+                            score++;
+                            status = "✅ BENAR";
+                        }
                     }
                 } else {
                     const selected = document.querySelector(`input[name="${prefixName}_${index}"]:checked`);
-                    if (!selected) unanswered = true;
-                    else if (parseInt(selected.value) === q.answer) score++;
+                    jawabanBenarText = q.options[q.answer] ? q.options[q.answer].replace(/<[^>]*>?/gm, '') : "Tidak ada";
+                    
+                    if (!selected) {
+                        unanswered = true;
+                    } else {
+                        let val = parseInt(selected.value);
+                        jawabanSiswaText = q.options[val].replace(/<[^>]*>?/gm, '');
+                        if (val === q.answer) {
+                            score++;
+                            status = "✅ BENAR";
+                        }
+                    }
                 }
-            });
-            return { score, unanswered, total: soalList.length };
-        }
 
-        function getNomorWaGuru(kelasKey) {
-            return daftarKontakGuru[kelasKey] || "6289691870961"; // Default ke no Pak Rio
+                detailText += `${qText}\nStatus: ${status}\nJawaban Kamu: ${jawabanSiswaText}\nKunci Jawaban: ${jawabanBenarText}\n\n`;
+            });
+            return { score, unanswered, total: soalList.length, detailText };
         }
 
         function submitTugas() {
             const kelasKey = currentUser.kelas_id || currentUser.kelas;
             const soalList = portalData[kelasKey].tugas;
-            const hasil = hitungSkor(soalList, 'tugas');
+            const hasil = hitungSkorDetail(soalList, 'tugas');
             
             if (hasil.unanswered) return alert("Masih ada soal tugas yang belum dijawab!");
             
@@ -1015,11 +1046,13 @@
             document.getElementById('display-name-tugas').innerText = currentUser.nama;
             document.getElementById('display-score-tugas').innerText = finalScore;
 
-            const noWaGuru = getNomorWaGuru(kelasKey);
-            const textPesan = `Assalamu'alaikum Guru Pembimbing, saya *${currentUser.nama}* dari *${portalData[kelasKey].namaMapel}* telah menyelesaikan Tugas.%0A%0A*Nilai Saya: ${finalScore}*`;
-            document.getElementById('wa-link-tugas').href = `https://wa.me/${noWaGuru}?text=${textPesan}`;
+            // Generate Email Draf
+            const emailGuru = daftarEmailGuru[kelasKey] || "gurumatematika@gmail.com";
+            const subject = `Laporan Nilai Tugas - ${currentUser.nama} - ${portalData[kelasKey].namaMapel}`;
+            const textPesan = `Assalamu'alaikum Guru Pembimbing,\n\nSaya ${currentUser.nama} dari ${portalData[kelasKey].namaMapel} telah menyelesaikan Tugas.\n\nNILAI AKHIR: ${finalScore}\n\n=== RINCIAN JAWABAN ===\n\n${hasil.detailText}`;
+            
+            document.getElementById('email-link-tugas').href = `mailto:${emailGuru}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(textPesan)}`;
         }
-
 
         // ================== LOGIC UJIAN (TOKEN & TIMER) ==================
         let jenisEvaluasiAktif = '';
@@ -1039,11 +1072,9 @@
             document.getElementById('pesan-error-token').style.display = 'none';
             switchTab('halaman-token');
         }
+        
         function validasiToken() {
             const tokenMasuk = document.getElementById('input-token').value.trim().toUpperCase();
-            
-            // Token fleksibel: Bisa menggunakan 'PTS2026' / 'PAS2026' atau 'UJIAN'
-            // Bapak bisa mengubah kata kunci token di sini sesuai kebutuhan
             const tokenValidPTS = ['PTS2026'];
             const tokenValidPAS = ['PAS2026'];
 
@@ -1071,10 +1102,8 @@
             document.getElementById('ujian-blocked-content').style.display = 'none';
             document.getElementById('judul-ujian-aktif').innerHTML = `<i class="fa-solid fa-file-signature"></i> Ujian ${jenisEvaluasiAktif.toUpperCase()}`;
             
-            // Render soal ujian ke dalam wadah dinamis
             renderSoalDinamis(portalData[kelasKey][jenisEvaluasiAktif], 'container-soal-dinamis', 'ujian');
             
-            // Tampilkan kembali tombol submit jika sebelumnya sempat disembunyikan
             document.getElementById('btn-submit-ujian-dinamis').style.display = 'block';
             document.getElementById('waktu-timer').parentElement.style.display = 'block';
 
@@ -1099,49 +1128,31 @@
         }
 
         function submitEvaluasi() {
-    clearInterval(timerInterval); // Hentikan timer saat submit
-    const kelasKey = currentUser.kelas_id || currentUser.kelas;
-    const soalList = portalData[kelasKey][jenisEvaluasiAktif];
-    let score = 0;
+            clearInterval(timerInterval); // Hentikan timer saat submit
+            const kelasKey = currentUser.kelas_id || currentUser.kelas;
+            const soalList = portalData[kelasKey][jenisEvaluasiAktif];
+            
+            // Hitung skor beserta detail jawaban untuk email
+            const hasil = hitungSkorDetail(soalList, 'ujian');
+            const finalScore = Math.round((hasil.score / hasil.total) * 100) || 0;
+            
+            currentUser[jenisEvaluasiAktif + '_done'] = true;
+            currentUser['skor_' + jenisEvaluasiAktif] = finalScore;
+            localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
+            
+            document.getElementById('container-soal-dinamis').innerHTML = "";
+            document.getElementById('btn-submit-ujian-dinamis').style.display = 'none';
+            document.getElementById('hasil-ujian-dinamis').style.display = 'block';
+            document.getElementById('skor-ujian-dinamis').innerText = finalScore;
+            document.getElementById('waktu-timer').parentElement.style.display = 'none';
 
-    soalList.forEach((q, index) => {
-        // PERBAIKAN: Ubah "soal_" menjadi "ujian_" agar sesuai dengan renderSoalDinamis saat ujian
-        const inputs = Array.from(document.querySelectorAll(`input[name="ujian_${index}"]:checked`)).map(el => parseInt(el.value));
-        const isPGK = q.type && q.type.toLowerCase() === 'pgk';
-        
-        if (isPGK && JSON.stringify(inputs.sort()) === JSON.stringify((q.answers || []).sort())) {
-            score++;
-        } else if (!isPGK && inputs[0] === q.answer) {
-            score++;
+            // Generate Email Draf
+            const emailTujuan = daftarEmailGuru[kelasKey] || "gurumatematika@gmail.com";
+            const subject = `Laporan Nilai ${jenisEvaluasiAktif.toUpperCase()} - ${currentUser.nama} - ${portalData[kelasKey].namaMapel}`;
+            const pesan = `Assalamu'alaikum Bapak,\n\nSaya ${currentUser.nama} dari ${portalData[kelasKey].namaMapel} telah selesai mengerjakan ujian ${jenisEvaluasiAktif.toUpperCase()}.\n\nNILAI UJIAN SAYA: ${finalScore}\n\n=== RINCIAN JAWABAN ===\n\n${hasil.detailText}`;
+            
+            document.getElementById('email-link-dinamis').href = `mailto:${emailTujuan}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(pesan)}`;
         }
-    });
-
-    const finalScore = Math.round((score / soalList.length) * 100) || 0;
-    currentUser[jenisEvaluasiAktif + '_done'] = true;
-    currentUser['skor_' + jenisEvaluasiAktif] = finalScore;
-    localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
-    document.getElementById('container-soal-dinamis').innerHTML = "";
-    document.getElementById('btn-submit-ujian-dinamis').style.display = 'none';
-    document.getElementById('hasil-ujian-dinamis').style.display = 'block';
-    document.getElementById('skor-ujian-dinamis').innerText = finalScore;
-    document.getElementById('waktu-timer').parentElement.style.display = 'none';
-
-    // PENGATURAN NOMOR WA BERDASARKAN KELAS
-    const kontakGuru = {
-        "4A": "6285705604801",
-        "4B": "6285705604801",
-        "5A": "6285705604801",
-        "6A": "6289691870961",
-        "7A": "6289691870961",
-        "8A": "6289691870961",
-        "9A": "6289691870961"
-    };
-
-    const noWaTujuan = kontakGuru[kelasKey] || "6289691870961";
-    const pesan = `Assalamu'alaikum, saya *${currentUser.nama}* dari *${portalData[kelasKey].namaMapel}* telah selesai mengerjakan *${jenisEvaluasiAktif.toUpperCase()}*.%0A%0A*Nilai Saya: ${finalScore}*`;
-    
-    document.getElementById('wa-link-dinamis').href = `https://wa.me/${noWaTujuan}?text=${pesan}`;
-}
     </script>
 </body>
 </html>
