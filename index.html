@@ -493,7 +493,7 @@
                 <div class="quiz-wrapper">
                     <div class="quiz-container">
                         <div id="tugas-blocked-content" style="display:none;">
-                            <h2>⚠️ Akses Ditolak</h2>
+                            <h2 onclick="bukaKunci('tugas')" style="cursor:default;">⚠️ Akses Ditolak</h2>
                             <p class="warning-text" style="margin-top:15px;">Kamu sudah menyelesaikan Tugas ini.</p>
                             <p style="text-align: center; color: #64748b;">Tugas hanya bisa disubmit satu kali.</p>
                         </div>
@@ -557,7 +557,7 @@
                 <div class="quiz-wrapper">
                     <div class="quiz-container">
                         <div id="ujian-blocked-content" style="display:none;">
-                            <h2>⚠️ Akses Ditolak</h2>
+                            <h2 onclick="bukaKunci(jenisEvaluasiAktif)" style="cursor:default;">⚠️ Akses Ditolak</h2>
                             <p class="warning-text" style="margin-top:15px;">Kamu sudah menyelesaikan Ujian ini.</p>
                         </div>
 
@@ -968,6 +968,32 @@
             document.getElementById('file-' + (kolomDB === 'kisi_kisi' ? 'kisi' : kolomDB)).value = '';
         }
 
+        // ================== RESET UJIAN / TUGAS (AKSES GURU) ==================
+        function bukaKunci(jenis) {
+            // Prompt ini tidak terlihat di UI, hanya muncul jika teks diklik
+            let pass = prompt("Otorisasi Guru: Masukkan sandi khusus untuk mereset sesi ini.");
+            
+            if (pass === "UJIAN02") {
+                if (jenis === 'tugas') {
+                    currentUser.tugas_done = false;
+                    currentUser.skor_tugas = 0;
+                } else if (jenis === 'pts') {
+                    currentUser.pts_done = false;
+                    currentUser.skor_pts = 0;
+                } else if (jenis === 'pas') {
+                    currentUser.pas_done = false;
+                    currentUser.skor_pas = 0;
+                }
+                
+                // Simpan pembaruan ke memori lokal
+                localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
+                alert("Akses berhasil dibuka ulang! Siswa dapat mencoba kembali.");
+                location.reload(); // Muat ulang halaman agar perubahan diterapkan
+            } else if (pass !== null) {
+                alert("Sandi tidak valid!");
+            }
+        }
+
         // ================== LOGIC TAMPILAN SIDEBAR HP ==================
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
@@ -1167,13 +1193,20 @@
 
         function mintaToken(jenis) {
             const kelasKey = currentUser.kelas_id || currentUser.kelas;
-            if (currentUser[jenis + '_done']) return alert(`Kamu sudah menyelesaikan Ujian ${jenis.toUpperCase()} ini.`);
+            jenisEvaluasiAktif = jenis; // Pindahkan ke atas agar bisa dibaca oleh halaman blokir
+            
+            if (currentUser[jenis + '_done']) {
+                switchTab('halaman-ujian-aktif');
+                document.getElementById('ujian-main-content').style.display = 'none';
+                document.getElementById('hasil-ujian-dinamis').style.display = 'none';
+                document.getElementById('ujian-blocked-content').style.display = 'block';
+                return;
+            }
             
             if (!portalData[kelasKey][jenis] || portalData[kelasKey][jenis].length === 0) {
                 return alert(`Maaf, Soal ${jenis.toUpperCase()} belum tersedia di kelas ini.`);
             }
 
-            jenisEvaluasiAktif = jenis;
             document.getElementById('input-token').value = '';
             document.getElementById('pesan-error-token').style.display = 'none';
             switchTab('halaman-token');
