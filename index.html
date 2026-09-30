@@ -1160,7 +1160,8 @@
             return { score, unanswered, total: soalList.length, detailText };
         }
 
-        function submitTugas() {
+        // ================= KODE YANG DIUBAH: Fungsi submitTugas =================
+        async function submitTugas() {
             const kelasKey = currentUser.kelas_id || currentUser.kelas;
             const soalList = portalData[kelasKey].tugas;
             const hasil = hitungSkorDetail(soalList, 'tugas');
@@ -1172,6 +1173,20 @@
             currentUser.tugas_done = true;
             currentUser.skor_tugas = finalScore;
             localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
+
+            // ================= KODE BARU: SIMPAN KE SUPABASE =================
+            try {
+                await supabaseClient.from('hasil_ujian').insert([{
+                    nama_siswa: currentUser.nama,
+                    kelas: portalData[kelasKey].namaMapel,
+                    jenis_ujian: 'TUGAS',
+                    skor: finalScore,
+                    detail_jawaban: hasil.detailText
+                }]);
+            } catch (err) {
+                console.error("Gagal menyimpan hasil tugas ke Supabase:", err);
+            }
+            // =================================================================
             
             document.getElementById('tugas-content').style.display = 'none';
             document.getElementById('tugas-result-content').style.display = 'block';
@@ -1266,7 +1281,8 @@
             }, 1000);
         }
 
-        function submitEvaluasi() {
+        // ================= KODE YANG DIUBAH: Fungsi submitEvaluasi =================
+        async function submitEvaluasi() {
             clearInterval(timerInterval); // Hentikan timer saat submit
             const kelasKey = currentUser.kelas_id || currentUser.kelas;
             const soalList = portalData[kelasKey][jenisEvaluasiAktif];
@@ -1279,6 +1295,20 @@
             currentUser['skor_' + jenisEvaluasiAktif] = finalScore;
             localStorage.setItem("Akselerasi_User_Session", JSON.stringify(currentUser));
             
+            // ================= KODE BARU: SIMPAN KE SUPABASE =================
+            try {
+                await supabaseClient.from('hasil_ujian').insert([{
+                    nama_siswa: currentUser.nama,
+                    kelas: portalData[kelasKey].namaMapel,
+                    jenis_ujian: jenisEvaluasiAktif.toUpperCase(),
+                    skor: finalScore,
+                    detail_jawaban: hasil.detailText
+                }]);
+            } catch (err) {
+                console.error("Gagal menyimpan hasil ujian ke Supabase:", err);
+            }
+            // =================================================================
+
             document.getElementById('container-soal-dinamis').innerHTML = "";
             document.getElementById('btn-submit-ujian-dinamis').style.display = 'none';
             document.getElementById('hasil-ujian-dinamis').style.display = 'block';
